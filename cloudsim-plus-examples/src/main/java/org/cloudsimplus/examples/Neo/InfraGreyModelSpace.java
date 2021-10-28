@@ -39,14 +39,13 @@ import org.cloudbus.cloudsim.util.SwfWorkloadFileReader;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelDynamic;
 import org.cloudbus.cloudsim.vms.Vm;
 import org.cloudbus.cloudsim.vms.VmSimple;
+import org.cloudsimplus.builders.tables.CloudletsTableBuilder;
 import org.cloudsimplus.examples.HybridModel.GeneticAlgorithmOne;
 import org.cloudsimplus.examples.HybridModel.MyBroker;
 import org.cloudsimplus.listeners.EventInfo;
 import org.cloudsimplus.util.Log;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * A minimal but organized, structured and re-usable CloudSim Plus example
@@ -63,7 +62,7 @@ import java.util.List;
 
 public class InfraGreyModelSpace {
 
-    private static final double INTERVAL = 50;
+    private static final double INTERVAL = 25;
     private static final int  HOSTS = 20;
     private static final int  HOST_PES = 128;
     private static final int  HOST_RAM = 1024; //in Megabytes
@@ -89,7 +88,7 @@ public class InfraGreyModelSpace {
     private static final int CLOUDLET_PES = 2;
     private static final int CLOUDLET_LENGTH = 10_000;
 
-    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile =  10000; // Integer.MAX_VALUE
+    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile =  Integer.MAX_VALUE; // Integer.MAX_VALUE
     //private static final String WORKLOAD_FILENAME = "workload/swf/KTH-SP2-1996-2.1-cln.swf.gz";
     //private static final String WORKLOAD_FILENAME = "workload/swf/HPC2N-2002-2.2-cln.swf.gz";     // 202871
     private static final String WORKLOAD_FILENAME = "workload/swf/NASA-iPSC-1993-3.1-cln.swf.gz";  // 18239
@@ -140,7 +139,7 @@ public class InfraGreyModelSpace {
 
                 heuristicIndex = 0;
 
-                System.out.printf("%n***************** SOLUTION CANDIDATE " + i + " STARTS ****************%n");
+                System.out.printf("%n***************** SOLUTION CANDIDATE " + i + " OF GENERATION "+ generations +"ENDS ****************%n");
 
                 simulation = new CloudSim();
                 datacenter0 = createDatacenter();
@@ -173,9 +172,13 @@ public class InfraGreyModelSpace {
 
                 //totalHostMIPSCapacity();
                 //totalVmMIPSCapacity();
-                //new CloudletsTableBuilder(finishedCloudlets).build();
+
 
                 final List<Cloudlet> finishedCloudlets = broker0.getCloudletFinishedList();
+                //new CloudletsTableBuilder(finishedCloudlets).build();
+                List <Cloudlet> FinishedCloudlets = getFinishedCloudlets(finishedCloudlets);
+                System.out.println("Finished Cloudlets: "+FinishedCloudlets.size());
+
                 System.out.println("vms_created: "+broker0.getVmCreatedList().size());
                 System.out.println("Simulation Time: " + simulation.clock());
                 System.out.println("finished cloudlets: " + finishedCloudlets.size());
@@ -187,7 +190,8 @@ public class InfraGreyModelSpace {
 
                 solutionCandidatesFitnessList.add(fitness);
                 System.out.println("Solution Candidate Fitness List: "+solutionCandidatesFitnessList);
-                System.out.printf("%n***************** SOLUTION CANDIDATE "+i+" ENDS ****************%n");
+
+                System.out.printf("%n***************** SOLUTION CANDIDATE " + i + " OF GENERATION "+ generations +" ENDS ****************%n");
 
             }
 
@@ -227,7 +231,18 @@ public class InfraGreyModelSpace {
 
 
 
+
+
         }
+
+    }
+
+    private List<Cloudlet> getFinishedCloudlets(List<Cloudlet> list) {
+
+        Set<Cloudlet> set = new HashSet<>(list);
+        list.clear();
+        list.addAll(set);
+        return list;
 
     }
 
@@ -238,6 +253,14 @@ public class InfraGreyModelSpace {
         schedulingHeuristic = solutionCandidate.get((heuristicIndex % 24));
         System.out.println("Heuristic Switched to "+schedulingHeuristic);
         broker0.selectSchedulingPolicy(schedulingHeuristic, vmList);
+
+        broker0.getCloudletSubmittedList().clear();
+        System.out.println("broker submitted list cleared...");
+        broker0.getCloudletCreatedList().clear();
+        System.out.println("broker created list cleared...");
+
+        broker0.submitCloudletList(broker0.getCloudletWaitingList());
+
         simulation.resume();
         System.out.println("simulation resumed...");
 
@@ -245,12 +268,18 @@ public class InfraGreyModelSpace {
 
     private void pauseSimulation( EventInfo evt) {
         if((int)evt.getTime() == INTERVAL * (heuristicIndex + 1)){
+
             simulation.pause();
+
             System.out.printf("%n# Simulation paused at %.2f second%n%n", Math.floor(simulation.clock()));
+
             postSimulationHeuristicSpecificFinishedCloudlets(broker0);
+
             System.out.printf("Total Cloudlets processed: "+broker0.getCloudletFinishedList().size()+"%n");
+
             cloudletList.removeAll(broker0.getCloudletFinishedList());
             System.out.printf("Remaining Cloudlets: "+cloudletList.size()+"%n%n");
+
         }
     }
 

@@ -21,7 +21,7 @@
  *     You should have received a copy of the GNU General Public License
  *     along with CloudSim Plus. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.cloudsimplus.examples.Neo;
+package org.cloudsimplus.examples.check;
 
 import ch.qos.logback.classic.Level;
 import org.cloudbus.cloudsim.cloudlets.Cloudlet;
@@ -40,10 +40,11 @@ import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelDynamic;
 import org.cloudbus.cloudsim.vms.Vm;
 import org.cloudbus.cloudsim.vms.VmSimple;
 import org.cloudsimplus.builders.tables.CloudletsTableBuilder;
-import org.cloudsimplus.examples.HybridModel.MyBroker;
+import org.cloudsimplus.examples.checkHybrid.SampleBroker;
 import org.cloudsimplus.util.Log;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -60,16 +61,18 @@ import java.util.List;
  */
 
 
-public class InfraGreySpace {
-    private static final int  HOSTS = 20;
-    private static final int  HOST_PES = 128;
+public class Sample {
+
+    private static final double INTERVAL = 100;
+    private static final int  HOSTS = 4;
+    private static final int  HOST_PES = 1;
     private static final int  HOST_RAM = 1024; //in Megabytes
     private static final long HOST_BW = 1000; //in Megabits/s
     private static final long HOST_STORAGE = 100_000; //in Megabytes
     private static final int  HOST_MIPS = 4000;
 
-    private static final int VMS = 20;
-    private static final int VM_PES = 128;
+    private static final int VMS = 4;
+    private static final int VM_PES = 1;
     private static final int VM_RAM = 1024; //in Megabytes
     private static final long VM_BW = 1000; //in Megabits/s
     private static final long VM_STORAGE = 100_000; //in Megabytes
@@ -82,88 +85,86 @@ public class InfraGreySpace {
         add(4000);
     } };
 
-    private static final int CLOUDLETS = 2000;
-    private static final int CLOUDLET_PES = 2;
-    private static final int CLOUDLET_LENGTH = 10_000;
+    private static final int CLOUDLETS = 100;
+    private static final int CLOUDLET_PES = 1;
+    private static final int CLOUDLET_LENGTH = 4000;
 
-    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile =  Integer.MAX_VALUE ; // Integer.MAX_VALUE
+    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile =  1000; // Integer.MAX_VALUE
     //private static final String WORKLOAD_FILENAME = "workload/swf/KTH-SP2-1996-2.1-cln.swf.gz";
     //private static final String WORKLOAD_FILENAME = "workload/swf/HPC2N-2002-2.2-cln.swf.gz";     // 202871
     private static final String WORKLOAD_FILENAME = "workload/swf/NASA-iPSC-1993-3.1-cln.swf.gz";  // 18239
 
-    private final CloudSim simulation;
+    private CloudSim simulation;
     private List<Vm> vmList;
     private List<Cloudlet> cloudletList;
     private Datacenter datacenter0;
-    MyBroker broker0;
+    SampleBroker broker0;
+    int heuristicIndex;
+    int schedulingHeuristic;
+
+    ArrayList<Integer> solutionCandidate = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4));
+    ArrayList<ArrayList> solutionCandidatesList = new ArrayList<>();
+    ArrayList<List<Cloudlet>> heuristicSpecificFinishedCloudletsList = new ArrayList<List<Cloudlet>>();
 
     public static void main(String[] args) {
-        new InfraGreySpace();
+        new Sample();
     }
 
-    private InfraGreySpace() {
+    private Sample() {
 
         Log.setLevel(Level.INFO);
 
-        simulation = new CloudSim();
-        datacenter0 = createDatacenter();
+        solutionCandidatesList.add(solutionCandidate);
 
-        broker0 = new MyBroker(simulation);
+        for (int i = 0; i < solutionCandidatesList.size(); i++) {
 
-        vmList = createVmsSpaceShared();
+            heuristicIndex = 0;
 
-        //cloudletList = createCloudlets();
-        cloudletList = createCloudletsFromWorkloadFile();
+            simulation = new CloudSim();
 
-        considerSubmissionTimes(0);
+            datacenter0 = createDatacenter();
+            datacenter0.setSchedulingInterval(1);
 
-        broker0.submitVmList(vmList);
-        broker0.submitCloudletList(cloudletList);
+            broker0 = new SampleBroker(simulation);
 
-        //broker0.setVmDestructionDelayFunction(v -> 1.0);
+            vmList = createVmsSpaceShared();
 
-        //broker0.Random(vmList);
-        //broker0.FirstComeFirstServe(vmList);
+            cloudletList = createCloudlets();
+            //cloudletList = createCloudletsFromWorkloadFile();
 
-        broker0.LongestJobFirst(vmList);
-        //broker0.ShortestJobFirst(vmList);
-        //broker0.ShortestCloudletFastestPE(vmList);
-        //broker0.LongestCloudletFastestPE(vmList);
-        //broker0.MinimumCompletionTime(vmList);
-        //broker0.MinimumExecutionTime(vmList);
+            considerSubmissionTimes(0);
 
-        //broker0.MinMin(vmList);
-        //broker0.MinMin1(vmList);
-        //broker0.MinMin2(vmList);
-        //broker0.MinMin3(vmList);
-        //broker0.MinMin4(vmList);
-        //broker0.MinMin5(vmList);
-        //broker0.MinMin6(vmList);
+            broker0.submitVmList(vmList);
+            broker0.submitCloudletList(cloudletList);
 
-        //broker0.MaxMin(vmList);
-        //broker0.MaxMin1(vmList);
-        //broker0.MaxMin2(vmList);
-        //broker0.MaxMin3(vmList);
-        //broker0.MaxMinp(vmList);
+            broker0.setVmDestructionDelayFunction(v -> 1.0);
 
-        //broker0.Sufferage(vmList);
+            //broker0.BindtoVMOne(vmList);
+            //broker0.BindtoVMTwo(vmList);
+            //broker0.BindtoVMThree(vmList);
+            broker0.BindtoVMFour(vmList);
 
-        simulation.start();
+            simulation.start();
 
-        final List<Cloudlet> finishedCloudlets = broker0.getCloudletFinishedList();
+            //totalHostMIPSCapacity();
+            //totalVmMIPSCapacity();
 
-        totalHostMIPSCapacity();
-        totalVmMIPSCapacity();
 
-        new CloudletsTableBuilder(finishedCloudlets).build();
+            final List<Cloudlet> finishedCloudlets = broker0.getCloudletFinishedList();
+            new CloudletsTableBuilder(finishedCloudlets).build();
+            System.out.println("finished cloudlets: " + finishedCloudlets.size());
+            double makespan = evaluatePerformanceMetrics("makespan");
+            //double degreeOfImbalance = evaluatePerformanceMetrics("degreeOfImbalance");
+            //double throughput = evaluatePerformanceMetrics("throughput");
 
-        System.out.println("finished cloudlets: "+finishedCloudlets.size());
-        double makespan = evaluatePerformanceMetrics("makespan");
-        double degreeOfImbalance = evaluatePerformanceMetrics("degreeOfImbalance");
-        double throughput = evaluatePerformanceMetrics("throughput");
 
+
+        }
 
     }
+
+
+
 
     private Datacenter createDatacenter() {
         final List<Host> hostList = new ArrayList<>(HOSTS);
@@ -200,7 +201,6 @@ public class InfraGreySpace {
         SwfWorkloadFileReader reader = SwfWorkloadFileReader.getInstance(WORKLOAD_FILENAME, 3);
         reader.setMaxLinesToRead(maximumNumberOfCloudletsToCreateFromTheWorkloadFile);
         this.cloudletList = reader.generateWorkload();
-        //cloudletList.remove(cloudletList.get(3));
         System.out.printf("# Created %12d Cloudlets for %n", this.cloudletList.size());
         return cloudletList;
     }
@@ -339,5 +339,6 @@ public class InfraGreySpace {
         return metricValue;
 
     }
+
 
 }

@@ -38,8 +38,10 @@ public class FirstComeFirstServePolicy {
         for (Cloudlet c : cloudletList) {
             if (c.isBoundToVm() == true) {
                 Vm v = c.getVm();
-                c.setVm(Vm.NULL);}
+                //c.setVm(Vm.NULL);
+                 }
             }
+
 
         final Comparator<Cloudlet> sortById = comparingLong(cl -> cl.getId());
         cloudletList.sort(sortById);
@@ -50,7 +52,9 @@ public class FirstComeFirstServePolicy {
                 Cloudlet cl = cloudletList.get(i);
                 Vm vm = vmList.get((i % vmList.size()));
                 //cl.setLength(cl.getLength()* (long) vm.getMips());
+                //cl.setVm(vm);
                 myBroker.bindCloudletToVm(cl, vm);
+                System.out.println(cl+" : "+vm);
         }
 
 

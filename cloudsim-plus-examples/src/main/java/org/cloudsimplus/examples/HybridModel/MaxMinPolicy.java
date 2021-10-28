@@ -50,7 +50,8 @@ public class MaxMinPolicy {
             if (c.isBoundToVm() == true){
                 //Vm v = c.getVm();
                 //c.setLength((long)(c.getLength()/v.getMips()));
-                c.setVm(Vm.NULL);}
+                //c.setVm(Vm.NULL);
+                 }
         }
 
         // Getting the amount of cloudlets and VMs
@@ -105,6 +106,7 @@ public class MaxMinPolicy {
 
             // Binding the respetcive cloudlet to the respective VM
             myBroker.bindCloudletToVm(maximumCloudlet, minimumVm);
+            //System.out.println(maximumCloudlet+" : "+minimumVm);
             //System.out.println(maximumCloudlet+" gets mapped to "+minimumVm+" with completion time, "+maximumCompletionTime);
 
             // Updating the completion time values for the selected VM and other remaining cloudlets
@@ -126,6 +128,8 @@ public class MaxMinPolicy {
             //System.out.println("*********************************");
 
         }
+
+
 
 
 

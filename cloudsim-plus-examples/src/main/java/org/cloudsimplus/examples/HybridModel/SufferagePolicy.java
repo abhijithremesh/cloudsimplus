@@ -87,7 +87,6 @@ public class SufferagePolicy {
 
             // Getting the cloudlet with maximum sufferage
             maxsufferageCloudlet = getCloudletMaxSufferage(cloudletSufferageList);
-
             //System.out.println("maxsufferageCloudlet = " + maxsufferageCloudlet);
 
             // Getting the VM which execute the above cloudlet in minimum completion time
@@ -112,6 +111,7 @@ public class SufferagePolicy {
 
             // Binding the respective cloudlet to the respective VM
             myBroker.bindCloudletToVm(maximumsufferageCloudlet, minimumVm);
+            //System.out.println(maximumsufferageCloudlet+" : "+minimumVm);
 
             // Updating the completion time values for the selected VM and other remaining cloudlets
             for (int i = 0; i < cloudletList.size(); i++) {

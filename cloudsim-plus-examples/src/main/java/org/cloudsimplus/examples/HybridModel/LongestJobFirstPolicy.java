@@ -45,7 +45,8 @@ public class LongestJobFirstPolicy {
             if (c.isBoundToVm() == true){
                 //Vm v = c.getVm();
                 //c.setLength((long)(c.getLength()/v.getMips()));
-                c.setVm(Vm.NULL);}
+                //c.setVm(Vm.NULL);
+            }
         }
 
         for(int i=0; i < cloudletList.size(); i++){
@@ -54,6 +55,7 @@ public class LongestJobFirstPolicy {
             Vm vm = vmList.get((i % vmList.size()));
             //cl.setLength(cl.getLength()* (long) vm.getMips());
             myBroker.bindCloudletToVm(cl,vm);
+            //cl.setVm(vm);
 
 
 

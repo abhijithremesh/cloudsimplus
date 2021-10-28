@@ -15,12 +15,6 @@ public class MyBroker extends DatacenterBrokerSimple {
         super(simulation);
     }
 
-    public void RoundRobin(List<Vm> vmList){
-
-        RoundRobinPolicy rr = new RoundRobinPolicy(this, vmList);
-        rr.schedule();
-
-    }
 
     public void FirstComeFirstServe(List<Vm> vmList){
 
@@ -50,26 +44,6 @@ public class MyBroker extends DatacenterBrokerSimple {
 
     }
 
-    public void BestFit(List<Vm> vmList){
-
-        BestFitPolicy bf = new BestFitPolicy(this, vmList);
-        bf.schedule();
-
-    }
-
-    public void ShortestJobFirstFirstFit(List<Vm> vmList){
-
-        ShortestJobFirstFirstFitPolicy sjfff = new ShortestJobFirstFirstFitPolicy(this, vmList);
-        sjfff.schedule();
-
-    }
-
-    public void LongestJobFirstFirstFit(List<Vm> vmList){
-
-        LongestJobFirstFirstFitPolicy ljfff = new LongestJobFirstFirstFitPolicy(this, vmList);
-        ljfff.schedule();
-
-    }
 
     public void Random(List<Vm> vmList){
 
@@ -237,22 +211,7 @@ public class MyBroker extends DatacenterBrokerSimple {
                 System.out.println("Random");
                 this.Random(vmList);
                 break;
-            case 9:
-                System.out.println("MCT");
-                this.MinimumCompletionTime(vmList);
-                break;
-            case 10:
-                System.out.println("SJF-FirstFit");
-                this.ShortestJobFirstFirstFit(vmList);
-                break;
-            case 11:
-                System.out.println("LJF-FirstFit");
-                this.LongestJobFirstFirstFit(vmList);
-                break;
-            case 12:
-                System.out.println("FCFS-FirstFit");
-                this.FirstComeFirstServeFirstFit(vmList);
-                break;
+
 
         }
     }

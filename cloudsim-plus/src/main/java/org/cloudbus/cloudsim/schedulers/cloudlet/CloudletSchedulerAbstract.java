@@ -209,6 +209,7 @@ public abstract class CloudletSchedulerAbstract implements CloudletScheduler {
     @Override
     public List<CloudletExecution> getCloudletExecList() {
         return Collections.unmodifiableList(cloudletExecList);
+        //return cloudletExecList;
     }
 
     protected void addCloudletToWaitingList(final CloudletExecution cle) {
@@ -247,7 +248,8 @@ public abstract class CloudletSchedulerAbstract implements CloudletScheduler {
 
     @Override
     public List<CloudletExecution> getCloudletWaitingList() {
-        return Collections.unmodifiableList(cloudletWaitingList);
+        //return Collections.unmodifiableList(cloudletWaitingList);
+        return cloudletWaitingList;
     }
 
     /**
@@ -1074,6 +1076,7 @@ public abstract class CloudletSchedulerAbstract implements CloudletScheduler {
     public List<Cloudlet> getCloudletList() {
         return Stream.concat(cloudletExecList.stream(), cloudletWaitingList.stream())
                      .map(CloudletExecution::getCloudlet)
+                     //.collect(toList());
                      .collect(collectingAndThen(toList(), Collections::unmodifiableList));
     }
 

@@ -950,21 +950,36 @@ public abstract class DatacenterBrokerAbstract extends CloudSimEntity implements
          * degrading performance in large scale simulations. */
         for (final Iterator<Cloudlet> it = cloudletWaitingList.iterator(); it.hasNext(); ) {
             final CloudletSimple cloudlet = (CloudletSimple)it.next();
+            //System.out.println("cloudlet.getId(): "+cloudlet.getId());
+
+/*
             if (!cloudlet.getLastTriedDatacenter().equals(Datacenter.NULL)) {
                 continue;
             }
 
+ */
+
+
+
             //selects a VM for the given Cloudlet
-            lastSelectedVm = vmMapper.apply(cloudlet);
+            //lastSelectedVm = vmMapper.apply(cloudlet);
+            lastSelectedVm = cloudlet.getVm();
+
+            //System.out.println("cloudlet.getVm() :"+cloudlet.getVm());
+            //System.out.println("lastSelectedVm: "+lastSelectedVm);
+
+
             if (!lastSelectedVm.isCreated()) {
                 logPostponingCloudletExecution(cloudlet);
                 continue;
             }
 
+
             ((VmSimple) lastSelectedVm).removeExpectedFreePesNumber(cloudlet.getNumberOfPes());
 
             logCloudletCreationRequest(cloudlet);
             cloudlet.setVm(lastSelectedVm);
+            //System.out.println(cloudlet+" "+cloudlet.getVm());
             send(getDatacenter(lastSelectedVm),
                 cloudlet.getSubmissionDelay(), CloudSimTags.CLOUDLET_SUBMIT, cloudlet);
             cloudlet.setLastTriedDatacenter(getDatacenter(lastSelectedVm));

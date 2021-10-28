@@ -615,6 +615,7 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter {
 
     private String generateNotFinishedCloudletsWarning(final Vm vm) {
         final int cloudletsNoFinished = vm.getCloudletScheduler().getCloudletList().size();
+        //System.out.println(vm+" : "+vm.getCloudletScheduler().getCloudletList());
         if(cloudletsNoFinished == 0) {
             return "";
         }

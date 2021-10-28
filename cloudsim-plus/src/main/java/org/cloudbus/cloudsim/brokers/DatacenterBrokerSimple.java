@@ -114,8 +114,12 @@ public class DatacenterBrokerSimple extends DatacenterBrokerAbstract {
      * @param cloudlet {@inheritDoc}
      * @return {@inheritDoc}
      */
+
+
+
     @Override
     protected Vm defaultVmMapper(final Cloudlet cloudlet) {
+
         if (cloudlet.isBoundToVm()) {
             return cloudlet.getVm();
         }
@@ -124,9 +128,21 @@ public class DatacenterBrokerSimple extends DatacenterBrokerAbstract {
             return Vm.NULL;
         }
 
-        /*If the cloudlet isn't bound to a specific VM or the bound VM was not created,
-        cyclically selects the next VM on the list of created VMs.*/
+        //If the cloudlet isn't bound to a specific VM or the bound VM was not created,
+        //cyclically selects the next VM on the list of created VMs.
         lastSelectedVmIndex = ++lastSelectedVmIndex % getVmExecList().size();
+
+
         return getVmFromCreatedList(lastSelectedVmIndex);
+
     }
+
+
+
+
+
+
+
+
+
 }

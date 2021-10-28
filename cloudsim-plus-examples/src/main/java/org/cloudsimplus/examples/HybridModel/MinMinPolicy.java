@@ -98,6 +98,7 @@ public class MinMinPolicy {
             // Binding the cloudlet to the respective VM
             myBroker.bindCloudletToVm(minimumCloudlet, minimumVm);
             //System.out.println(minimumCloudlet+" gets mapped to "+minimumVm+" with completion time, "+MinimumCompletionTime);
+            //System.out.println(minimumCloudlet+" : "+minimumVm);
 
 
             // Updating the completion time values for the selected VM and other remaining cloudlets

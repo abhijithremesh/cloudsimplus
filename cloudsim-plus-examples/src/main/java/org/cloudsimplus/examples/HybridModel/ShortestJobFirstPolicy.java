@@ -38,6 +38,16 @@ public class ShortestJobFirstPolicy {
 
         System.out.println("Cloudlets remaining: "+cloudletList.size());
 
+        /*
+        double d = 0.0;
+        for (Vm v : vmList
+        ) {
+            d = d + v.getCloudletScheduler().getCloudletList().size();
+        }
+        System.out.println("No . of cloudlets: "+d);
+         */
+
+
         final Comparator<Cloudlet> sortBylength = comparingLong(cl -> cl.getLength());
         cloudletList.sort(sortBylength);
 
@@ -47,7 +57,8 @@ public class ShortestJobFirstPolicy {
             if (c.isBoundToVm() == true){
                 //Vm v = c.getVm();
                 //c.setLength((long)(c.getLength()/v.getMips()));
-                c.setVm(Vm.NULL);}
+                //c.setVm(Vm.NULL);
+            }
         }
 
         for(int i=0;i<cloudletList.size();i++){
@@ -56,8 +67,12 @@ public class ShortestJobFirstPolicy {
             Vm vm = vmList.get((i % vmList.size()));
             //cl.setLength(cl.getTotalLength()* (long) vm.getMips());
             myBroker.bindCloudletToVm(cl,vm);
+            System.out.println(cl+" : "+vm);
+            //cl.setVm(vm);
 
         }
+
+        System.out.println("Finished SJF Scheduling....");
     }
 
 }
