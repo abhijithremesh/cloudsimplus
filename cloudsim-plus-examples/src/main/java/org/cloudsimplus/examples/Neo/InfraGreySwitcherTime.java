@@ -63,7 +63,7 @@ import java.util.stream.Collectors;
  */
 
 
-public class InfraGreySwitcherSpace {
+public class InfraGreySwitcherTime {
 
     private static final double INTERVAL = 25;
     private static final int  HOSTS = 20;
@@ -115,10 +115,10 @@ public class InfraGreySwitcherSpace {
 
 
     public static void main(String[] args) {
-        new InfraGreySwitcherSpace();
+        new InfraGreySwitcherTime();
     }
 
-    private InfraGreySwitcherSpace() {
+    private InfraGreySwitcherTime() {
 
         Log.setLevel(Level.INFO);
 
@@ -135,7 +135,7 @@ public class InfraGreySwitcherSpace {
 
             broker0 = new MyBroker(simulation);
 
-            vmList = createVmsSpaceShared();
+            vmList = createVmsTimeShared();
 
             //cloudletList = createCloudlets();
             cloudletList = createCloudletsFromWorkloadFile();
@@ -241,7 +241,7 @@ public class InfraGreySwitcherSpace {
 
         List <CloudletExecution> all_exec = new ArrayList<>();
         for (Vm v : vmList
-             ) {
+        ) {
             List<CloudletExecution> execList = v.getCloudletScheduler().getCloudletExecList();
             //all_exec.addAll(execList);
             v.getCloudletScheduler().getCloudletWaitingList().clear();
@@ -250,7 +250,7 @@ public class InfraGreySwitcherSpace {
 
 
         for (CloudletExecution c: all_exec
-             ) {
+        ) {
             cloudletList.removeIf(cloudlet -> cloudlet.getId() == c.getCloudletId());
         }
 
