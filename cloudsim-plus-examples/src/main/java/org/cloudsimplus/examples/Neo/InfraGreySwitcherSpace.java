@@ -250,7 +250,6 @@ public class InfraGreySwitcherSpace {
         }
 
 
-
         for (CloudletExecution c: all_exec
              ) {
             cloudletList.removeIf(cloudlet -> cloudlet.getId() == c.getCloudletId());

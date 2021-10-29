@@ -25,6 +25,7 @@ package org.cloudsimplus.examples.Neo;
 
 import ch.qos.logback.classic.Level;
 import org.cloudbus.cloudsim.cloudlets.Cloudlet;
+import org.cloudbus.cloudsim.cloudlets.CloudletExecution;
 import org.cloudbus.cloudsim.cloudlets.CloudletSimple;
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.datacenters.Datacenter;
@@ -259,7 +260,28 @@ public class InfraGreyModelSpace {
         broker0.getCloudletCreatedList().clear();
         System.out.println("broker created list cleared...");
 
-        broker0.submitCloudletList(broker0.getCloudletWaitingList());
+        List <CloudletExecution> all_exec = new ArrayList<>();
+        for (Vm v : vmList
+        ) {
+            List<CloudletExecution> execList = v.getCloudletScheduler().getCloudletExecList();
+            //all_exec.addAll(execList);
+            v.getCloudletScheduler().getCloudletWaitingList().clear();
+            all_exec.addAll(execList);
+        }
+
+        for (CloudletExecution c: all_exec
+        ) {
+            cloudletList.removeIf(cloudlet -> cloudlet.getId() == c.getCloudletId());
+        }
+
+        System.out.println(all_exec);
+        System.out.println(cloudletList);
+
+        System.out.println(broker0.getCloudletWaitingList().size());
+
+        broker0.submitCloudletList(cloudletList);
+
+        //broker0.submitCloudletList(broker0.getCloudletWaitingList());
 
         simulation.resume();
         System.out.println("simulation resumed...");
