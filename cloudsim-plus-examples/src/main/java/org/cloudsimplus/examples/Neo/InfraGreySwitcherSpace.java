@@ -91,7 +91,7 @@ public class InfraGreySwitcherSpace {
     private static final int CLOUDLET_PES = 2;
     private static final int CLOUDLET_LENGTH = 10_000;
 
-    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile =  100; // Integer.MAX_VALUE
+    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile =  1000; // Integer.MAX_VALUE
     //private static final String WORKLOAD_FILENAME = "workload/swf/KTH-SP2-1996-2.1-cln.swf.gz";
     //private static final String WORKLOAD_FILENAME = "workload/swf/HPC2N-2002-2.2-cln.swf.gz";     // 202871
     private static final String WORKLOAD_FILENAME = "workload/swf/NASA-iPSC-1993-3.1-cln.swf.gz";  // 18239
@@ -104,14 +104,14 @@ public class InfraGreySwitcherSpace {
     int heuristicIndex;
     int schedulingHeuristic;
 
-    //ArrayList<Integer> solutionCandidate = new ArrayList<>(Arrays.asList(2, 3, 1, 7, 0, 6, 4, 5, 7, 5, 1, 0, 3, 4, 2, 6, 7, 3, 0, 4, 2, 1, 5, 6));
-    //ArrayList<ArrayList> solutionCandidatesList = new ArrayList<>();
+    ArrayList<Integer> solutionCandidate = new ArrayList<>(Arrays.asList(4, 5, 3, 0, 7, 1, 6, 2, 0, 7, 3, 5, 4, 6, 2, 1, 0, 6, 5, 2, 1, 4, 3, 7));
+    ArrayList<ArrayList> solutionCandidatesList = new ArrayList<>();
     ArrayList<List<Cloudlet>> heuristicSpecificFinishedCloudletsList = new ArrayList<List<Cloudlet>>();
 
     // Generating Initial Population
     GeneticAlgorithmOne ga = new GeneticAlgorithmOne();
-    ArrayList<ArrayList> solutionCandidatesList = ga.createInitialPopulation(1, 8);
-    ArrayList<Integer> solutionCandidate = new ArrayList<>();
+    //ArrayList<ArrayList> solutionCandidatesList = ga.createInitialPopulation(1, 8);
+    //ArrayList<Integer> solutionCandidate = new ArrayList<>();
 
 
     public static void main(String[] args) {
@@ -122,7 +122,7 @@ public class InfraGreySwitcherSpace {
 
         Log.setLevel(Level.INFO);
 
-        //solutionCandidatesList.add(solutionCandidate);
+        solutionCandidatesList.add(solutionCandidate);
 
         for (int i = 0; i < solutionCandidatesList.size(); i++) {
 
@@ -193,8 +193,8 @@ public class InfraGreySwitcherSpace {
             System.out.println("solutionCandidate: "+solutionCandidate);
             final List<Cloudlet> finishedCloudlets = broker0.getCloudletFinishedList();
             //new CloudletsTableBuilder(finishedCloudlets).build();
-            List <Cloudlet> FinishedCloudlets = getFinishedCloudlets(finishedCloudlets);
-            System.out.println("Finished Cloudlets: "+FinishedCloudlets.size());
+            //List <Cloudlet> FinishedCloudlets = getFinishedCloudlets(finishedCloudlets);
+            System.out.println("Finished Cloudlets: "+finishedCloudlets.size());
 
             double makespan = evaluatePerformanceMetrics("makespan");
             double degreeOfImbalance = evaluatePerformanceMetrics("degreeOfImbalance");
