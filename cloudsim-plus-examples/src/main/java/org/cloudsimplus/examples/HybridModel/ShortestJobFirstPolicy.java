@@ -67,12 +67,12 @@ public class ShortestJobFirstPolicy {
             Vm vm = vmList.get((i % vmList.size()));
             //cl.setLength(cl.getTotalLength()* (long) vm.getMips());
             myBroker.bindCloudletToVm(cl,vm);
-            System.out.println(cl+" : "+vm);
+            //System.out.println(cl+" : "+vm);
             //cl.setVm(vm);
 
         }
 
-        System.out.println("Finished SJF Scheduling....");
+        //System.out.println("Finished SJF Scheduling....");
     }
 
 }

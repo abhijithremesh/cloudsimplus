@@ -48,7 +48,7 @@ public class RandomPolicy {
             Vm vm = vmList.get(v);
             //cl.setLength(cl.getLength()* (long) vm.getMips());
             myBroker.bindCloudletToVm(cl, vm);
-            System.out.println(cl+" : "+vm);
+            //System.out.println(cl+" : "+vm);
 
         }
 

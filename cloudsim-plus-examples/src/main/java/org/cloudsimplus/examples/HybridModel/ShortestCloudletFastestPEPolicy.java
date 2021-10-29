@@ -60,7 +60,7 @@ public class ShortestCloudletFastestPEPolicy {
             Vm vm = vmList.get((i % vmList.size()));
             //cl.setLength(cl.getLength()* (long) vm.getMips());
             myBroker.bindCloudletToVm(cl,vm);
-            System.out.println(cl+" : "+vm);
+            //System.out.println(cl+" : "+vm);
 
         }
 
