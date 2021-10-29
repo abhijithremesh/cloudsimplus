@@ -91,7 +91,7 @@ public class InfraGreySwitcherSpace {
     private static final int CLOUDLET_PES = 2;
     private static final int CLOUDLET_LENGTH = 10_000;
 
-    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile =  Integer.MAX_VALUE; // Integer.MAX_VALUE
+    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile =  100; // Integer.MAX_VALUE
     //private static final String WORKLOAD_FILENAME = "workload/swf/KTH-SP2-1996-2.1-cln.swf.gz";
     //private static final String WORKLOAD_FILENAME = "workload/swf/HPC2N-2002-2.2-cln.swf.gz";     // 202871
     private static final String WORKLOAD_FILENAME = "workload/swf/NASA-iPSC-1993-3.1-cln.swf.gz";  // 18239
@@ -131,7 +131,7 @@ public class InfraGreySwitcherSpace {
             simulation = new CloudSim();
 
             datacenter0 = createDatacenter();
-            //datacenter0.setSchedulingInterval(10);
+            //datacenter0.setSchedulingInterval(1);
 
             broker0 = new MyBroker(simulation);
 

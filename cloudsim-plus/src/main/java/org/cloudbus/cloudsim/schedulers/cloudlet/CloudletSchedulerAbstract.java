@@ -506,6 +506,11 @@ public abstract class CloudletSchedulerAbstract implements CloudletScheduler {
 
     @Override
     public double updateProcessing(final double currentTime, final MipsShare mipsShare) {
+
+        System.out.println("currentTime: "+currentTime);
+        System.out.println("simulationClock: "+this.getVm().getSimulation().clock());
+        System.out.println("finishedCloudlets: "+this.getVm().getBroker().getCloudletFinishedList().size());
+
         setCurrentMipsShare(mipsShare);
 
         if (isEmpty()) {
