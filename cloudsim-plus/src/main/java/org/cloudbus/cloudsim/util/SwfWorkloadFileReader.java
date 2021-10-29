@@ -287,6 +287,7 @@ public final class SwfWorkloadFileReader extends TraceReaderAbstract {
     }
 
     /**
+     *
      * Gets the MIPS capacity of the PEs from the VM where each created Cloudlet is supposed to run.
      * Considering the workload reader provides the run time for each
      * application registered inside the reader, the MIPS value will be used

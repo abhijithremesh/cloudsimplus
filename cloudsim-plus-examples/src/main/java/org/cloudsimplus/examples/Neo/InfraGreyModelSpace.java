@@ -177,8 +177,8 @@ public class InfraGreyModelSpace {
 
                 final List<Cloudlet> finishedCloudlets = broker0.getCloudletFinishedList();
                 //new CloudletsTableBuilder(finishedCloudlets).build();
-                List <Cloudlet> FinishedCloudlets = getFinishedCloudlets(finishedCloudlets);
-                System.out.println("Finished Cloudlets: "+FinishedCloudlets.size());
+                //List <Cloudlet> FinishedCloudlets = getFinishedCloudlets(finishedCloudlets);
+                System.out.println("Finished Cloudlets: "+finishedCloudlets.size());
 
                 System.out.println("vms_created: "+broker0.getVmCreatedList().size());
                 System.out.println("Simulation Time: " + simulation.clock());
