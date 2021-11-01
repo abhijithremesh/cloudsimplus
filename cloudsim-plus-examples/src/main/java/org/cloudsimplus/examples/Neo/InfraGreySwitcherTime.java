@@ -104,7 +104,7 @@ public class InfraGreySwitcherTime {
     int heuristicIndex;
     int schedulingHeuristic;
 
-    ArrayList<Integer> solutionCandidate = new ArrayList<>(Arrays.asList(7, 5, 1, 0, 4, 6, 3, 2, 6, 3, 1, 5, 2, 7, 0, 4, 5, 1, 3, 2, 0, 4, 7, 6));
+    ArrayList<Integer> solutionCandidate = new ArrayList<>(Arrays.asList(4, 1, 2, 7, 0, 3, 5, 6, 3, 2, 4, 0, 1, 6, 5, 7, 7, 2, 6, 1, 4, 0, 3, 5));
     ArrayList<ArrayList> solutionCandidatesList = new ArrayList<>();
     ArrayList<List<Cloudlet>> heuristicSpecificFinishedCloudletsList = new ArrayList<List<Cloudlet>>();
 
