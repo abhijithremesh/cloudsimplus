@@ -210,8 +210,8 @@ public abstract class CloudletSchedulerAbstract implements CloudletScheduler {
 
     @Override
     public List<CloudletExecution> getCloudletExecList() {
-        return Collections.unmodifiableList(cloudletExecList);
-        //return cloudletExecList;
+        //return Collections.unmodifiableList(cloudletExecList);
+        return cloudletExecList;
     }
 
     protected void addCloudletToWaitingList(final CloudletExecution cle) {
@@ -509,10 +509,13 @@ public abstract class CloudletSchedulerAbstract implements CloudletScheduler {
     @Override
     public double updateProcessing(final double currentTime, final MipsShare mipsShare) {
 
+        //System.out.println(this.cloudletWaitingList);
+        //System.out.println(this.cloudletExecList);
+        //System.out.println(this.getVm());
         //System.out.println("currentTime: "+currentTime);
         //System.out.println("simulationClock: "+this.getVm().getSimulation().clock());
-        //System.out.println("finishedCloudlets: "+this.getVm().getBroker().getCloudletFinishedList().size());
 
+        //System.out.println("finishedCloudlets: "+this.getVm().getBroker().getCloudletFinishedList().size());
         //System.out.println("entered update processing at "+currentTime+" for times "+this.count);
         //count ++;
 
@@ -1086,8 +1089,8 @@ public abstract class CloudletSchedulerAbstract implements CloudletScheduler {
     public List<Cloudlet> getCloudletList() {
         return Stream.concat(cloudletExecList.stream(), cloudletWaitingList.stream())
                      .map(CloudletExecution::getCloudlet)
-                     //.collect(toList());
-                     .collect(collectingAndThen(toList(), Collections::unmodifiableList));
+                     .collect(toList());
+                     //.collect(collectingAndThen(toList(), Collections::unmodifiableList));
     }
 
     @Override

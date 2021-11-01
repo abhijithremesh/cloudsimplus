@@ -262,6 +262,7 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
     @Override
     public double updateProcessing(MipsShare mipsShare) {
         return updateProcessing(getSimulation().clock(), mipsShare);
+        //return updateProcessing(50, mipsShare);
     }
 
     @Override
@@ -271,6 +272,7 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
         if (!cloudletScheduler.isEmpty()) {
             setLastBusyTime();
         }
+
         final double nextSimulationDelay = cloudletScheduler.updateProcessing(currentTime, mipsShare);
         notifyOnUpdateProcessingListeners();
 

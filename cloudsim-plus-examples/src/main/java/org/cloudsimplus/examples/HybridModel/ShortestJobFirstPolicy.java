@@ -29,9 +29,11 @@ public class ShortestJobFirstPolicy {
         System.out.println("Scheduling with SJF Policy");
 
         if (myBroker.getCloudletWaitingList().isEmpty()) {
+            System.out.println("from broker created list");
             cloudletList  = myBroker.getCloudletCreatedList();
             cloudletList.removeAll(myBroker.getCloudletFinishedList());
         } else {
+            System.out.println("from broker waiting list");
             cloudletList = myBroker.getCloudletWaitingList();
             System.out.println("Cloudlets waiting: "+cloudletList.size());
         }
@@ -67,7 +69,7 @@ public class ShortestJobFirstPolicy {
             Vm vm = vmList.get((i % vmList.size()));
             //cl.setLength(cl.getTotalLength()* (long) vm.getMips());
             myBroker.bindCloudletToVm(cl,vm);
-            //System.out.println(cl+" : "+vm);
+            System.out.println(cl+" : "+vm);
             //cl.setVm(vm);
 
         }

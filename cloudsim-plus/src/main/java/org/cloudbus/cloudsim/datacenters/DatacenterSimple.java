@@ -615,7 +615,7 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter {
 
     private String generateNotFinishedCloudletsWarning(final Vm vm) {
         final int cloudletsNoFinished = vm.getCloudletScheduler().getCloudletList().size();
-        //System.out.println(vm+" : "+vm.getCloudletScheduler().getCloudletList());
+        System.out.println(vm+" : "+vm.getCloudletScheduler().getCloudletList());
         if(cloudletsNoFinished == 0) {
             return "";
         }
@@ -691,8 +691,8 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter {
      */
     private void notifyBrokerAboutAlreadyFinishedCloudlet(final Cloudlet cloudlet, final boolean ack) {
         LOGGER.warn(
-            "{}: {} owned by {} is already completed/finished. It won't be executed again.",
-            getName(), cloudlet, cloudlet.getBroker());
+            "{}: {} owned by {} is already completed/finished in {}. It won't be executed again.",
+            getName(), cloudlet, cloudlet.getBroker(), cloudlet.getVm());
 
         /*
          NOTE: If a Cloudlet has finished, then it won't be processed.
