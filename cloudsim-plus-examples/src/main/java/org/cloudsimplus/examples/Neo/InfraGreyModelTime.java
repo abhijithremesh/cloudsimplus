@@ -48,7 +48,6 @@ import org.cloudsimplus.listeners.EventInfo;
 import org.cloudsimplus.util.Log;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * A minimal but organized, structured and re-usable CloudSim Plus example
@@ -63,7 +62,7 @@ import java.util.stream.Collectors;
  */
 
 
-public class InfraGreySwitcherTime {
+public class InfraGreyModelTime {
 
     private static final double INTERVAL = 25;
     private static final int  HOSTS = 20;
@@ -104,104 +103,135 @@ public class InfraGreySwitcherTime {
     int heuristicIndex;
     int schedulingHeuristic;
 
-    ArrayList<Integer> solutionCandidate = new ArrayList<>(Arrays.asList(7, 5, 1, 0, 4, 6, 3, 2, 6, 3, 1, 5, 2, 7, 0, 4, 5, 1, 3, 2, 0, 4, 7, 6));
-    ArrayList<ArrayList> solutionCandidatesList = new ArrayList<>();
+    ArrayList<Integer> solutionCandidate = new ArrayList<>();
     ArrayList<List<Cloudlet>> heuristicSpecificFinishedCloudletsList = new ArrayList<List<Cloudlet>>();
 
-    // Generating Initial Population
-    //GeneticAlgorithmOne ga = new GeneticAlgorithmOne();
-    //ArrayList<ArrayList> solutionCandidatesList = ga.createInitialPopulation(1, 8);
-    //ArrayList<Integer> solutionCandidate = new ArrayList<>();
-
-
     public static void main(String[] args) {
-        new InfraGreySwitcherTime();
+        new InfraGreyModelTime();
     }
 
-    private InfraGreySwitcherTime() {
+    private InfraGreyModelTime() {
 
         Log.setLevel(Level.OFF);
 
-        solutionCandidatesList.add(solutionCandidate);
+        // Generating Initial Population
+        GeneticAlgorithmOne ga = new GeneticAlgorithmOne();
+        ArrayList<ArrayList> solutionCandidatesList = ga.createInitialPopulation(1, 8);
+        System.out.println("initialPopulation: " + solutionCandidatesList);
 
-        for (int i = 0; i < solutionCandidatesList.size(); i++) {
+        // Identifying and Storing the best solution candidates of each generation
+        double generationAvgFittestValue;
+        double generationBestFittestValue;
+        double bestFittestValue;
+        ArrayList<Integer> bestFittestCandidate = new ArrayList<>();
+        ArrayList<Double> generationAvgFitnessValuesList = new ArrayList<Double>();
+        ArrayList<Double> generationBestFitnessValuesList = new ArrayList<Double>();
+        ArrayList<Integer> generationBestSolutionCandidate = new ArrayList<>();
+        ArrayList<ArrayList> generationBestSolutionCandidateList = new ArrayList<>();
 
-            heuristicIndex = 0;
+        for (int generations = 0; generations < 1; generations++) {
 
-            simulation = new CloudSim();
+            ArrayList<Double> solutionCandidatesFitnessList = new ArrayList<>();
 
-            datacenter0 = createDatacenter();
+            System.out.printf("%n=================================== GENERATION " + generations + " STARTS ==========================================%n");
 
-            broker0 = new MyBroker(simulation);
+            System.out.printf("%nsolutionCandidatesList: " + solutionCandidatesList + "%n%n");
 
-            vmList = createVmsTimeShared();
+            for (int i = 0; i < solutionCandidatesList.size(); i++) {
 
-            //cloudletList = createCloudlets();
-            cloudletList = createCloudletsFromWorkloadFile();
+                heuristicIndex = 0;
 
-            considerSubmissionTimes(0);
+                System.out.printf("%n***************** SOLUTION CANDIDATE " + i + " OF GENERATION "+ generations +" STARTS ****************%n");
 
-            simulation.addOnClockTickListener(this::pauseSimulation);
-            simulation.addOnSimulationPauseListener(this::switchSchedulingHeuristics);
+                simulation = new CloudSim();
+                datacenter0 = createDatacenter();
+                //datacenter0.setSchedulingInterval(10);
 
-            broker0.submitVmList(vmList);
-            broker0.submitCloudletList(cloudletList);
+                broker0 = new MyBroker(simulation);
 
-            //broker0.setVmDestructionDelayFunction(v -> 30.0);
+                vmList = createVmsTimeShared();
+                //cloudletList = createCloudlets();
+                cloudletList = createCloudletsFromWorkloadFile();
+                considerSubmissionTimes(0);
 
-            solutionCandidate = solutionCandidatesList.get(i);
-            System.out.printf("%nSolution Candidate: "+solutionCandidate+"%n%n");
-            schedulingHeuristic = solutionCandidate.get(heuristicIndex);
-            System.out.println("Heuristic Switched to "+schedulingHeuristic);
-            broker0.selectSchedulingPolicy(schedulingHeuristic,vmList);
+                simulation.addOnClockTickListener(this::pauseSimulation);
+                simulation.addOnSimulationPauseListener(this::switchSchedulingHeuristics);
 
-
-            //broker0.Random(vmList);
-            //broker0.FirstComeFirstServe(vmList);
-            //broker0.LongestJobFirst(vmList);
-            //broker0.ShortestJobFirst(vmList);
-            //broker0.ShortestCloudletFastestPE(vmList);
-            //broker0.LongestCloudletFastestPE(vmList);
-            //broker0.MinimumCompletionTime(vmList);
-            //broker0.MinimumExecutionTime(vmList);
-
-            //broker0.MinMin(vmList);
-            //broker0.MinMin1(vmList);
-            //broker0.MinMin2(vmList);
-            //broker0.MinMin3(vmList);
-            //broker0.MinMin4(vmList);
-            //broker0.MinMin5(vmList);
-            //broker0.MinMin6(vmList);
-
-            //broker0.MaxMin(vmList);
-            //broker0.MaxMin1(vmList);
-            //broker0.MaxMin2(vmList);
-            //broker0.MaxMin3(vmList);
-            //broker0.MaxMinp(vmList);
-
-            //broker0.Sufferage(vmList);
+                broker0.submitVmList(vmList);
+                broker0.submitCloudletList(cloudletList);
+                //broker0.setVmDestructionDelayFunction(v -> 1.0);
 
 
-            simulation.start();
+                solutionCandidate = solutionCandidatesList.get(i);
+                System.out.printf("%nSolution Candidate: " + solutionCandidate + "%n%n");
+                schedulingHeuristic = solutionCandidate.get(heuristicIndex);
+                System.out.println("Heuristic Switched to " + schedulingHeuristic);
+                broker0.selectSchedulingPolicy(schedulingHeuristic, vmList);
 
-            //totalHostMIPSCapacity();
-            //totalVmMIPSCapacity();
+                simulation.start();
 
-            //postSimulationHeuristicSpecificFinishedCloudlets(broker0);
-
-            System.out.println("solutionCandidate: "+solutionCandidate);
-            final List<Cloudlet> finishedCloudlets = broker0.getCloudletFinishedList();
-            //new CloudletsTableBuilder(finishedCloudlets).build();
-            //List <Cloudlet> FinishedCloudlets = getFinishedCloudlets(finishedCloudlets);
-            System.out.println("Finished Cloudlets: "+finishedCloudlets.size());
-
-            double makespan = evaluatePerformanceMetrics("makespan");
-            double degreeOfImbalance = evaluatePerformanceMetrics("degreeOfImbalance");
-            double throughput = evaluatePerformanceMetrics("throughput");
+                //totalHostMIPSCapacity();
+                //totalVmMIPSCapacity();
 
 
+                final List<Cloudlet> finishedCloudlets = broker0.getCloudletFinishedList();
+                //new CloudletsTableBuilder(finishedCloudlets).build();
+                //List <Cloudlet> FinishedCloudlets = getFinishedCloudlets(finishedCloudlets);
+                System.out.println("Finished Cloudlets: "+finishedCloudlets.size());
+
+                System.out.println("vms_created: "+broker0.getVmCreatedList().size());
+                System.out.println("Simulation Time: " + simulation.clock());
+                System.out.println("finished cloudlets: " + finishedCloudlets.size());
 
 
+                double fitness = evaluatePerformanceMetrics("makespan");
+                //double fitness = evaluatePerformanceMetrics("degreeOfImbalance");
+                //double fitness = evaluatePerformanceMetrics("throughput");
+
+                solutionCandidatesFitnessList.add(fitness);
+                System.out.println("Solution Candidate Fitness List: "+solutionCandidatesFitnessList);
+
+                System.out.printf("%n***************** SOLUTION CANDIDATE " + i + " OF GENERATION "+ generations +" ENDS ****************%n");
+
+            }
+
+            System.out.println("solutionCandidatesList:" + solutionCandidatesList);
+            System.out.println("solutionCandidatesFitnessList: " + solutionCandidatesFitnessList);
+            System.out.println("solutionCandidatesListSize: " + solutionCandidatesList.size());
+            System.out.println("solutionCandidatesFitnessListSize: " + solutionCandidatesFitnessList.size());
+
+/*
+            generationAvgFittestValue = ga.getGenerationAvgFittestValue(solutionCandidatesFitnessList);
+            generationAvgFitnessValuesList.add(generationAvgFittestValue);
+            generationBestFittestValue = ga.getGenerationBestFittestValue(solutionCandidatesFitnessList,"min");
+            generationBestFitnessValuesList.add(generationBestFittestValue);
+            generationBestSolutionCandidate = ga.getGenerationBestFittestSolutionCandidate(solutionCandidatesList, solutionCandidatesFitnessList,"min");
+            generationBestSolutionCandidateList.add(generationBestSolutionCandidate);
+            bestFittestValue = ga.getBestFittestValue(generationBestFitnessValuesList,"min");
+            bestFittestCandidate = ga.getBestFittestSolutionCandidate(generationBestSolutionCandidateList,generationBestFitnessValuesList,"min");
+            System.out.println("generationAvgFitnessValue: "+generationAvgFittestValue);
+            System.out.println("generationAvgFitnessValuesList: "+generationAvgFitnessValuesList);
+            System.out.println("generationBestFittestValue: "+generationBestFittestValue);
+            System.out.println("generationBestFittestValuesList: "+generationBestFitnessValuesList);
+            System.out.println("generationBestSolutionCandidate: "+generationBestSolutionCandidate);
+            System.out.println("generationBestSolutionCandidateList: "+generationBestSolutionCandidateList);
+            System.out.println("bestFittestValue: "+bestFittestValue);
+            System.out.println("bestFittestCandidate: "+bestFittestCandidate);
+
+            System.out.println("=================================== GENERATION "+generations+" ENDS ==========================================");
+
+            String flag = "min";
+            int eliteCount = 3;
+            int tournamentCount = 4;
+            double crossoverRate = 0.5;
+            double mutationRate = 0.4;
+            solutionCandidatesList = ga.generationEvolve(solutionCandidatesList,solutionCandidatesFitnessList,flag,eliteCount,tournamentCount, crossoverRate, mutationRate);
+
+            System.out.println("=================================== GENERATION "+generations+" EVOLVED ==========================================");
+
+
+
+ */
 
 
 
@@ -217,7 +247,6 @@ public class InfraGreySwitcherTime {
         return list;
 
     }
-
 
     public void switchSchedulingHeuristics(EventInfo pauseInfo) {
 
@@ -241,12 +270,10 @@ public class InfraGreySwitcherTime {
         ) {
             List<CloudletExecution> execList = v.getCloudletScheduler().getCloudletExecList();
             all_exec.addAll(execList);
-            //v.getCloudletScheduler().getCloudletExecList().removeIf(cle -> cle.getRemainingCloudletLength() < cle.getCloudletLength());
-            //v.getCloudletScheduler().getCloudletList().removeIf(c -> c.getFinishedLengthSoFar() < c.getLength());
         }
 
         for (CloudletExecution cle: all_exec
-             ) {
+        ) {
             cloudletList.stream().anyMatch(cloudlet -> cloudlet.getId() == cle.getCloudletId());
         }
 
@@ -257,19 +284,20 @@ public class InfraGreySwitcherTime {
 
         //cloudletList.forEach(c-> System.out.println(c.getId()+"-"+c.getLength()+"-"+c.getFinishedLengthSoFar()));
 
+
         broker0.submitCloudletList(cloudletList);
+
 
         simulation.resume();
         System.out.println("simulation resumed...");
 
-
     }
 
     private void pauseSimulation( EventInfo evt) {
-
         if((int)evt.getTime() == INTERVAL * (heuristicIndex + 1)){
 
             simulation.pause();
+
             System.out.printf("%n# Simulation paused at %.2f second%n%n", Math.floor(simulation.clock()));
 
             postSimulationHeuristicSpecificFinishedCloudlets(broker0);
@@ -301,18 +329,6 @@ public class InfraGreySwitcherTime {
         return h;
     }
 
-    private List<Vm> createVmsSpaceShared() {
-        final List<Vm> list = new ArrayList<>(VMS);
-        for (int i = 0; i < VMS; i++) {
-            VM_MIPS = VM_MIPSList.get(i % 4);
-            final Vm vm = new VmSimple(VM_MIPS, VM_PES);
-            vm.setRam(VM_RAM).setBw(VM_BW).setSize(VM_STORAGE);
-            vm.setCloudletScheduler(new CloudletSchedulerSpaceShared());
-            list.add(vm);
-        }
-        return list;
-    }
-
     private List<Vm> createVmsTimeShared() {
         final List<Vm> list = new ArrayList<>(VMS);
         for (int i = 0; i < VMS; i++) {
@@ -329,7 +345,6 @@ public class InfraGreySwitcherTime {
         SwfWorkloadFileReader reader = SwfWorkloadFileReader.getInstance(WORKLOAD_FILENAME, 3);
         reader.setMaxLinesToRead(maximumNumberOfCloudletsToCreateFromTheWorkloadFile);
         this.cloudletList = reader.generateWorkload();
-        //cloudletList.remove(cloudletList.get(3));
         System.out.printf("# Created %12d Cloudlets for %n", this.cloudletList.size());
         return cloudletList;
     }
@@ -472,7 +487,6 @@ public class InfraGreySwitcherTime {
     public void postSimulationHeuristicSpecificFinishedCloudlets(MyBroker myBroker){
 
         List<Cloudlet> allFinishedCloudlets = myBroker.getCloudletFinishedList();
-        System.out.println("Makespan until Now: "+broker0.getCloudletFinishedList().get(broker0.getCloudletFinishedList().size() - 1).getFinishTime());
         heuristicSpecificFinishedCloudletsList.add(allFinishedCloudlets);
         int items = heuristicSpecificFinishedCloudletsList.size();
         List<Cloudlet> heuristicSpecificFinishedCloudlets = new ArrayList<Cloudlet>();
@@ -490,6 +504,7 @@ public class InfraGreySwitcherTime {
         }
         //}
 
+        //new CloudletsTableBuilder(heuristicSpecificFinishedCloudlets).build();
         //new CloudletsTableBuilder(heuristicSpecificFinishedCloudlets).build();
         System.out.printf("Heuristic Cloudlets processed: "+heuristicSpecificFinishedCloudlets.size()+"%n");
         //System.out.println("Cloudlets Heuristics processed: "+heuristicSpecificFinishedCloudlets);
