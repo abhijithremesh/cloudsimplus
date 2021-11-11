@@ -89,7 +89,7 @@ public class BasicNew {
     private static final int CLOUDLET_PES = 2;
     private static final int CLOUDLET_LENGTH = 10_000;
 
-    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile =  7000; // Integer.MAX_VALUE
+    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile =  Integer.MAX_VALUE; // Integer.MAX_VALUE
     //private static final String WORKLOAD_FILENAME = "workload/swf/KTH-SP2-1996-2.1-cln.swf.gz";
     //private static final String WORKLOAD_FILENAME = "workload/swf/HPC2N-2002-2.2-cln.swf.gz";     // 202871
     private static final String WORKLOAD_FILENAME = "workload/swf/NASA-iPSC-1993-3.1-cln.swf.gz";  // 18239
@@ -117,9 +117,9 @@ public class BasicNew {
         Log.setLevel(Level.OFF);
 
         GeneticAlgorithmNew gnew = new GeneticAlgorithmNew();
-        List<Chromosome> chromosomeList = gnew.createInitialPopulation(20, 24, 7);
+        List<Chromosome> chromosomeList = gnew.createInitialPopulation(10, 24, 7);
 
-        for (int generation = 0; generation < 20; generation++) {
+        for (int generation = 0; generation < 10; generation++) {
 
             System.out.println("*********************************Generation "+generation+" starts**************************************\n");
 

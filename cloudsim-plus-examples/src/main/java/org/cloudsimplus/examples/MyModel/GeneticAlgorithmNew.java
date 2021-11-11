@@ -65,6 +65,7 @@ public class GeneticAlgorithmNew {
         for (Chromosome c: generationBestChromosomeList
              ) {
             c.getGeneList().forEach(gene -> System.out.print(gene.getSchedulingHeuristic()));
+            System.out.print(" ");
         }
         System.out.println();
 
