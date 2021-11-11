@@ -15,6 +15,9 @@ public class GeneticAlgorithmNew {
     List<Chromosome> childChromosomesList = new ArrayList<>();
     List<Chromosome> nextPopulation = new ArrayList<>();
 
+    List<Double> generationBestFitnessValueList = new ArrayList<>();
+    List<Chromosome> generationBestChromosomeList = new ArrayList<>();
+
     public List<Chromosome> createInitialPopulation(int n, int len, int bound){
 
         for (int i=0; i<n; i++){
@@ -46,6 +49,25 @@ public class GeneticAlgorithmNew {
         }
 
         System.out.println("\nfitnessList: "+fitnessList);
+
+    }
+
+    public void generationBest(){
+
+        List<Chromosome> chromosomeList = this.chromosomeList;
+        List<Double> fitnessList = this.fitnessList;
+
+        generationBestFitnessValueList.add(Collections.min(fitnessList));
+        generationBestChromosomeList.add(chromosomeList.get(fitnessList.indexOf(Collections.min(fitnessList))));
+
+        System.out.println("generationBestFitnessValueList: "+generationBestFitnessValueList);
+        System.out.print("generationBestChromosomeList: ");
+        for (Chromosome c: generationBestChromosomeList
+             ) {
+            c.getGeneList().forEach(gene -> System.out.print(gene.getSchedulingHeuristic()));
+        }
+        System.out.println();
+
 
     }
 
