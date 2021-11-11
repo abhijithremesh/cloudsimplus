@@ -33,22 +33,13 @@ public class RandomPolicy {
 
         List<Cloudlet> cloudletList= myBroker.getCloudletSubmittedList();
 
-        for (Cloudlet c : cloudletList) {
-            if (c.isBoundToVm() == true){
-                //Vm v = c.getVm();
-                //c.setLength((long)(c.getLength()/v.getMips()));
-                //c.setVm(Vm.NULL);
-            }
-        }
 
         for (int i = 0; i <cloudletList.size(); i++){
 
             Cloudlet cl = cloudletList.get(i);
             int v = random.nextInt(vmList.size());
             Vm vm = vmList.get(v);
-            //cl.setLength(cl.getLength()* (long) vm.getMips());
             myBroker.bindCloudletToVm(cl, vm);
-            //System.out.println(cl+" : "+vm);
 
         }
 

@@ -34,13 +34,14 @@ import org.cloudbus.cloudsim.hosts.Host;
 import org.cloudbus.cloudsim.hosts.HostSimple;
 import org.cloudbus.cloudsim.resources.Pe;
 import org.cloudbus.cloudsim.resources.PeSimple;
-import org.cloudbus.cloudsim.schedulers.cloudlet.CloudletSchedulerTimeShared;
+import org.cloudbus.cloudsim.schedulers.cloudlet.CloudletSchedulerSpaceShared;
 import org.cloudbus.cloudsim.schedulers.vm.VmSchedulerSpaceShared;
 import org.cloudbus.cloudsim.util.SwfWorkloadFileReader;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelDynamic;
 import org.cloudbus.cloudsim.vms.Vm;
 import org.cloudbus.cloudsim.vms.VmSimple;
 import org.cloudsimplus.examples.HybridModel.GeneticAlgorithmA;
+import org.cloudsimplus.examples.HybridModel.GeneticAlgorithmB;
 import org.cloudsimplus.examples.HybridModel.MyBroker;
 import org.cloudsimplus.listeners.EventInfo;
 import org.cloudsimplus.util.Log;
@@ -60,7 +61,7 @@ import java.util.*;
  */
 
 
-public class InfraGreyModelTime {
+public class InfraGreyModelSpace1 {
 
     private static final double INTERVAL = 25;
     private static final int  HOSTS = 20;
@@ -88,7 +89,7 @@ public class InfraGreyModelTime {
     private static final int CLOUDLET_PES = 2;
     private static final int CLOUDLET_LENGTH = 10_000;
 
-    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile =  4000; // Integer.MAX_VALUE
+    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile =  16000; // Integer.MAX_VALUE
     //private static final String WORKLOAD_FILENAME = "workload/swf/KTH-SP2-1996-2.1-cln.swf.gz";
     //private static final String WORKLOAD_FILENAME = "workload/swf/HPC2N-2002-2.2-cln.swf.gz";     // 202871
     private static final String WORKLOAD_FILENAME = "workload/swf/NASA-iPSC-1993-3.1-cln.swf.gz";  // 18239
@@ -105,16 +106,16 @@ public class InfraGreyModelTime {
     ArrayList<List<Cloudlet>> heuristicSpecificFinishedCloudletsList = new ArrayList<List<Cloudlet>>();
 
     public static void main(String[] args) {
-        new InfraGreyModelTime();
+        new InfraGreyModelSpace1();
     }
 
-    private InfraGreyModelTime() {
+    private InfraGreyModelSpace1() {
 
         Log.setLevel(Level.OFF);
 
         // Generating Initial Population
-        GeneticAlgorithmA ga = new GeneticAlgorithmA();
-        ArrayList<ArrayList> solutionCandidatesList = ga.createInitialPopulation(1, 8);
+        GeneticAlgorithmB ga = new GeneticAlgorithmB();
+        ArrayList<ArrayList> solutionCandidatesList = ga.createInitialPopulation(50, 8);
         System.out.println("initialPopulation: " + solutionCandidatesList);
 
         // Identifying and Storing the best solution candidates of each generation
@@ -127,7 +128,7 @@ public class InfraGreyModelTime {
         ArrayList<Integer> generationBestSolutionCandidate = new ArrayList<>();
         ArrayList<ArrayList> generationBestSolutionCandidateList = new ArrayList<>();
 
-        for (int generations = 0; generations < 1; generations++) {
+        for (int generations = 0; generations < 100; generations++) {
 
             ArrayList<Double> solutionCandidatesFitnessList = new ArrayList<>();
 
@@ -139,7 +140,7 @@ public class InfraGreyModelTime {
 
                 heuristicIndex = 0;
 
-                System.out.printf("%n***************** SOLUTION CANDIDATE " + i + " OF GENERATION "+ generations +" STARTS ****************%n");
+                System.out.printf("%n***************** SOLUTION CANDIDATE " + i + " OF GENERATION "+ generations +"ENDS ****************%n");
 
                 simulation = new CloudSim();
                 datacenter0 = createDatacenter();
@@ -147,18 +148,17 @@ public class InfraGreyModelTime {
 
                 broker0 = new MyBroker(simulation);
 
-                vmList = createVmsTimeShared();
+                vmList = createVmsSpaceShared();
                 //cloudletList = createCloudlets();
                 cloudletList = createCloudletsFromWorkloadFile();
                 considerSubmissionTimes(0);
-
-                simulation.addOnClockTickListener(this::pauseSimulation);
-                simulation.addOnSimulationPauseListener(this::switchSchedulingHeuristics);
 
                 broker0.submitVmList(vmList);
                 broker0.submitCloudletList(cloudletList);
                 //broker0.setVmDestructionDelayFunction(v -> 1.0);
 
+                simulation.addOnClockTickListener(this::pauseSimulation);
+                simulation.addOnSimulationPauseListener(this::switchSchedulingHeuristics);
 
                 solutionCandidate = solutionCandidatesList.get(i);
                 System.out.printf("%nSolution Candidate: " + solutionCandidate + "%n%n");
@@ -167,9 +167,6 @@ public class InfraGreyModelTime {
                 broker0.selectSchedulingPolicy(schedulingHeuristic, vmList);
 
                 simulation.start();
-
-                //totalHostMIPSCapacity();
-                //totalVmMIPSCapacity();
 
 
                 final List<Cloudlet> finishedCloudlets = broker0.getCloudletFinishedList();
@@ -193,12 +190,13 @@ public class InfraGreyModelTime {
 
             }
 
+
             System.out.println("solutionCandidatesList:" + solutionCandidatesList);
             System.out.println("solutionCandidatesFitnessList: " + solutionCandidatesFitnessList);
             System.out.println("solutionCandidatesListSize: " + solutionCandidatesList.size());
             System.out.println("solutionCandidatesFitnessListSize: " + solutionCandidatesFitnessList.size());
 
-/*
+
             generationAvgFittestValue = ga.getGenerationAvgFittestValue(solutionCandidatesFitnessList);
             generationAvgFitnessValuesList.add(generationAvgFittestValue);
             generationBestFittestValue = ga.getGenerationBestFittestValue(solutionCandidatesFitnessList,"min");
@@ -228,11 +226,6 @@ public class InfraGreyModelTime {
             System.out.println("=================================== GENERATION "+generations+" EVOLVED ==========================================");
 
 
-
- */
-
-
-
         }
 
     }
@@ -259,32 +252,27 @@ public class InfraGreyModelTime {
         broker0.getCloudletCreatedList().clear();
         System.out.println("broker created list cleared...");
 
-        System.out.println(broker0.getCloudletSubmittedList().equals(broker0.getCloudletCreatedList()));
-
-        System.out.println("cloudlets: "+cloudletList.size());
-
         List <CloudletExecution> all_exec = new ArrayList<>();
         for (Vm v : vmList
         ) {
             List<CloudletExecution> execList = v.getCloudletScheduler().getCloudletExecList();
+            //all_exec.addAll(execList);
+            v.getCloudletScheduler().getCloudletWaitingList().clear();
             all_exec.addAll(execList);
         }
 
-        for (CloudletExecution cle: all_exec
+        for (CloudletExecution c: all_exec
         ) {
-            cloudletList.stream().anyMatch(cloudlet -> cloudlet.getId() == cle.getCloudletId());
+            cloudletList.removeIf(cloudlet -> cloudlet.getId() == c.getCloudletId());
         }
 
-        //cloudletList.forEach(c-> System.out.println(c.getId()+"-"+c.getLength()+"-"+c.getFinishedLengthSoFar()));
-        //System.out.println("                ");
-
-        cloudletList.forEach(c-> c.setLength(c.getLength() - c.getFinishedLengthSoFar()));
-
-        //cloudletList.forEach(c-> System.out.println(c.getId()+"-"+c.getLength()+"-"+c.getFinishedLengthSoFar()));
-
+        //System.out.println(all_exec);
+        //System.out.println(cloudletList);
+        //System.out.println(broker0.getCloudletWaitingList().size());
 
         broker0.submitCloudletList(cloudletList);
 
+        //broker0.submitCloudletList(broker0.getCloudletWaitingList());
 
         simulation.resume();
         System.out.println("simulation resumed...");
@@ -327,13 +315,13 @@ public class InfraGreyModelTime {
         return h;
     }
 
-    private List<Vm> createVmsTimeShared() {
+    private List<Vm> createVmsSpaceShared() {
         final List<Vm> list = new ArrayList<>(VMS);
         for (int i = 0; i < VMS; i++) {
             VM_MIPS = VM_MIPSList.get(i % 4);
             final Vm vm = new VmSimple(VM_MIPS, VM_PES);
             vm.setRam(VM_RAM).setBw(VM_BW).setSize(VM_STORAGE);
-            vm.setCloudletScheduler(new CloudletSchedulerTimeShared());
+            vm.setCloudletScheduler(new CloudletSchedulerSpaceShared());
             list.add(vm);
         }
         return list;
@@ -395,89 +383,16 @@ public class InfraGreyModelTime {
         double metricValue = 0;
         double makespan = broker0.getCloudletFinishedList().get(broker0.getCloudletFinishedList().size() - 1).getFinishTime();
 
-        double totalResponseTime = 0.0;
-        double totalWaitingTime = 0.0;
-        double totalExecutionTime = 0.0;
-        for (Cloudlet c : broker0.getCloudletFinishedList()
-        ) {
-
-            totalResponseTime = totalResponseTime + (c.getSubmissionDelay() + c.getWaitingTime() + c.getActualCpuTime());
-            totalWaitingTime = totalWaitingTime + c.getWaitingTime();
-            totalExecutionTime = totalExecutionTime + c.getActualCpuTime();
-
-        }
-
-        Cloudlet firstCloudlet = broker0.getCloudletFinishedList().get(0);
-        double responseTime = firstCloudlet.getFinishTime() - firstCloudlet.getArrivalTime(firstCloudlet.getVm().getHost().getDatacenter());
-
-        double totalVmRunTime = 0.0;
-        for (Vm v : vmList
-        ) {
-            totalVmRunTime = totalVmRunTime + v.getTotalExecutionTime();
-        }
-
-        double degreeOfImbalance = 0;
-        List <Double> vmExecTimeList = new ArrayList<Double>();
-        for (Vm v: broker0.getVmCreatedList()
-        ) {
-            vmExecTimeList.add(v.getTotalExecutionTime());
-        }
-        //System.out.println(vmExecTimeList);
-        degreeOfImbalance = (Collections.max(vmExecTimeList) - Collections.min(vmExecTimeList))/vmExecTimeList.stream().mapToDouble(d -> d).average().orElse(0.0);
-        //degreeOfImbalance = (Collections.max(vmExecTimeList) + Collections.min(vmExecTimeList))/vmExecTimeList.stream().mapToDouble(d -> d).average().orElse(0.0);
-
-        double costPerSecond = (0.12 + 0.13 + 0.17 + 0.48 + 0.52 + 0.96)/3600 ;
-        double totalVmCost = totalVmRunTime * costPerSecond;
-
         double throughput = broker0.getCloudletFinishedList().size() / makespan;
-
-
 
         if (metric == "makespan") {
             metricValue = makespan;
             System.out.println("makespan: " + ((double)Math.round(metricValue *  100.0)/100));
-        } else if (metric == "totalResponseTime") {
-            metricValue = totalResponseTime;
-            System.out.println("totalResponseTime: " + ((double)Math.round(metricValue *  100.0)/100));
-        } else if (metric == "avgResponseTime") {
-            metricValue = totalResponseTime / cloudletList.size();
-            System.out.println("avgResponseTime: " + ((double)Math.round(metricValue *  100.0)/100) );
-        } else if (metric == "totalWaitingTime") {
-            metricValue = totalWaitingTime;
-            System.out.println("totalWaitingTime: " + ((double)Math.round(metricValue *  100.0)/100));
-        } else if (metric == "avgWaitingTime") {
-            metricValue = totalWaitingTime / cloudletList.size();
-            System.out.println("avgWaitingTime: " + ((double)Math.round(metricValue *  100.0)/100) );
-        } else if (metric == "totalExecutionTime"){
-            metricValue = totalExecutionTime;
-            System.out.println("Total Execution Time: "+((double)Math.round(metricValue *  100.0)/100) );
-        } else if (metric == "avgExecutionTime"){
-            metricValue = totalExecutionTime/cloudletList.size();
-            System.out.println("avgExecutionTime: "+ ((double)Math.round(metricValue *  100.0)/100)  );
-        } else if (metric == "totalVmRunTime"){
-            metricValue = totalVmRunTime;
-            System.out.println("totalVmRunTime: "+totalVmRunTime);
-        } else if (metric == "SlowdownRatio") {
-            metricValue = (totalResponseTime / cloudletList.size()) / (totalExecutionTime / cloudletList.size());
-            System.out.println("SlowdownRatio: " +((double)Math.round(metricValue *  100.0)/100)  );
-        } else if(metric == "processorUtilization"){
-            metricValue = totalVmRunTime/simulation.getLastCloudletProcessingUpdate();
-            System.out.println("processorUtilization: "+((double)Math.round(metricValue *  100.0)/100));
-        } else if (metric == "degreeOfImbalance") {
-            metricValue = degreeOfImbalance;
-            System.out.println("degreeOfImbalance: " + ((double) Math.round(metricValue * 100.0) / 100));
-        } else if (metric == "totalVmCost")   {
-            metricValue = totalVmCost;
-            System.out.println("totalVmCost: " + ((double) Math.round(metricValue * 100.0) / 100));
-        } else if (metric == "throughput") {
+        }  else if (metric == "throughput") {
             metricValue = throughput;
             System.out.println("throughput: " + ((double) Math.round(metricValue * 100.0) / 100));
-        } else if (metric == "responseTime") {
-            metricValue = responseTime;
-            System.out.println("responseTime: " + ((double) Math.round(metricValue * 100.0) / 100));
         }
 
-        //return ((double)Math.round(metricValue *  100.0)/100);
         return metricValue;
 
     }

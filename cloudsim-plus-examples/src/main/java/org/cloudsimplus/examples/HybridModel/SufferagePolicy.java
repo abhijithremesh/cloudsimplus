@@ -68,7 +68,7 @@ public class SufferagePolicy {
         for (int i = 0; i < noOfCloudlets; i++) {
             for (int j = 0; j < noOfVms; j++) {
                 time = getCompletionTime(cloudletList.get(i), vmList.get(j));
-                //time = Math.round(time * 100.0) / 100.0;
+                time = Math.round(time * 100.0) / 100.0;
                 completionTime[i][j] = time;
                 //System.out.println("Completion Time Cloudlet" + i + "-VM" + j + " : " + completionTime[i][j]);
             }
@@ -117,7 +117,7 @@ public class SufferagePolicy {
             for (int i = 0; i < cloudletList.size(); i++) {
                 if (completionTime[i][minVm] != -1) {
                     completionTime[i][minVm] = completionTime[i][minVm] + respectiveCompletionTime;
-                    //completionTime[i][minVm] = Math.round(completionTime[i][minVm] * 100.0) / 100.0;
+                    completionTime[i][minVm] = Math.round(completionTime[i][minVm] * 100.0) / 100.0;
                 }
             }
 

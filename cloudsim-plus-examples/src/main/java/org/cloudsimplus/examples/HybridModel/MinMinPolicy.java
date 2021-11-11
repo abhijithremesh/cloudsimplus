@@ -33,16 +33,6 @@ public class MinMinPolicy {
         List<Cloudlet> cloudletList = myBroker.getCloudletSubmittedList();
 
 
-        for (Cloudlet c : cloudletList) {
-            if (c.isBoundToVm() == true) {
-                //Vm v = c.getVm();
-                //c.setLength((long)(c.getLength()/v.getMips()));
-                //c.setVm(Vm.NULL);
-                //Vm v = (VmSimple) c.getVm();
-            }
-        }
-
-
         int noOfVms = vmList.size();
         int noOfCloudlets = cloudletList.size();
 

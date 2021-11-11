@@ -45,6 +45,7 @@ import org.cloudsimplus.util.Log;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 /**
  * A minimal but organized, structured and re-usable CloudSim Plus example
@@ -148,11 +149,17 @@ public class MyBasic {
         //broker0.LongestJobFirstFirstFit(vmList);
         //broker0.LongestCloudletFastestPE(vmList);
         //broker0.MinimumCompletionTime(vmList);
-        broker0.MinimumExecutionTime(vmList);
+        //broker0.MinimumExecutionTime(vmList);
         //broker0.MaxMin(vmList);
         //broker0.MinMin(vmList);
         //broker0.Sufferage(vmList);
 
+        Random rand = new Random();
+        double a = Math.round(rand.nextDouble() * 100.0)/100.0;
+        System.out.println(a);
+
+
+        /*
         simulation.start();
 
         double makespan = evaluatePerformanceMetrics("makespan");
@@ -167,6 +174,8 @@ public class MyBasic {
 
         final List<Cloudlet> finishedCloudlets = broker0.getCloudletFinishedList();
         new CloudletsTableBuilder(finishedCloudlets).build();
+
+         */
 
 
 

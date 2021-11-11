@@ -86,10 +86,10 @@ public class InfraGreySpace {
     private static final int CLOUDLET_PES = 2;
     private static final int CLOUDLET_LENGTH = 10_000;
 
-    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile =  Integer.MAX_VALUE ; // Integer.MAX_VALUE
-    //private static final String WORKLOAD_FILENAME = "workload/swf/KTH-SP2-1996-2.1-cln.swf.gz";
+    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile =  16000 ; // Integer.MAX_VALUE
+    private static final String WORKLOAD_FILENAME = "workload/swf/KTH-SP2-1996-2.1-cln.swf.gz";
     //private static final String WORKLOAD_FILENAME = "workload/swf/HPC2N-2002-2.2-cln.swf.gz";     // 202871
-    private static final String WORKLOAD_FILENAME = "workload/swf/NASA-iPSC-1993-3.1-cln.swf.gz";  // 18239
+    //private static final String WORKLOAD_FILENAME = "workload/swf/NASA-iPSC-1993-3.1-cln.swf.gz";  // 18239
 
     private final CloudSim simulation;
     private List<Vm> vmList;
@@ -122,38 +122,24 @@ public class InfraGreySpace {
 
         //broker0.setVmDestructionDelayFunction(v -> 1.0);
 
+        broker0.FirstComeFirstServe(vmList);
         //broker0.Random(vmList);
-        //broker0.FirstComeFirstServe(vmList);
-
-        broker0.LongestJobFirst(vmList);
+        //broker0.LongestJobFirst(vmList);
         //broker0.ShortestJobFirst(vmList);
         //broker0.ShortestCloudletFastestPE(vmList);
         //broker0.LongestCloudletFastestPE(vmList);
         //broker0.MinimumCompletionTime(vmList);
         //broker0.MinimumExecutionTime(vmList);
-
         //broker0.MinMin(vmList);
-        //broker0.MinMin1(vmList);
-        //broker0.MinMin2(vmList);
-        //broker0.MinMin3(vmList);
-        //broker0.MinMin4(vmList);
-        //broker0.MinMin5(vmList);
-        //broker0.MinMin6(vmList);
-
         //broker0.MaxMin(vmList);
-        //broker0.MaxMin1(vmList);
-        //broker0.MaxMin2(vmList);
-        //broker0.MaxMin3(vmList);
-        //broker0.MaxMinp(vmList);
-
         //broker0.Sufferage(vmList);
 
         simulation.start();
 
         final List<Cloudlet> finishedCloudlets = broker0.getCloudletFinishedList();
 
-        totalHostMIPSCapacity();
-        totalVmMIPSCapacity();
+        //totalHostMIPSCapacity();
+        //totalVmMIPSCapacity();
 
         new CloudletsTableBuilder(finishedCloudlets).build();
 
@@ -197,7 +183,7 @@ public class InfraGreySpace {
     }
 
     private List<Cloudlet> createCloudletsFromWorkloadFile() {
-        SwfWorkloadFileReader reader = SwfWorkloadFileReader.getInstance(WORKLOAD_FILENAME, 3);
+        SwfWorkloadFileReader reader = SwfWorkloadFileReader.getInstance(WORKLOAD_FILENAME, 1);
         reader.setMaxLinesToRead(maximumNumberOfCloudletsToCreateFromTheWorkloadFile);
         this.cloudletList = reader.generateWorkload();
         //cloudletList.remove(cloudletList.get(3));

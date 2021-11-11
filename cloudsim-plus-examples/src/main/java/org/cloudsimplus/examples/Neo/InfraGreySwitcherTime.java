@@ -41,14 +41,12 @@ import org.cloudbus.cloudsim.util.SwfWorkloadFileReader;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelDynamic;
 import org.cloudbus.cloudsim.vms.Vm;
 import org.cloudbus.cloudsim.vms.VmSimple;
-import org.cloudsimplus.builders.tables.CloudletsTableBuilder;
-import org.cloudsimplus.examples.HybridModel.GeneticAlgorithmOne;
+import org.cloudsimplus.examples.HybridModel.GeneticAlgorithmA;
 import org.cloudsimplus.examples.HybridModel.MyBroker;
 import org.cloudsimplus.listeners.EventInfo;
 import org.cloudsimplus.util.Log;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * A minimal but organized, structured and re-usable CloudSim Plus example
@@ -109,7 +107,7 @@ public class InfraGreySwitcherTime {
     ArrayList<List<Cloudlet>> heuristicSpecificFinishedCloudletsList = new ArrayList<List<Cloudlet>>();
 
     // Generating Initial Population
-    //GeneticAlgorithmOne ga = new GeneticAlgorithmOne();
+    //GeneticAlgorithmA ga = new GeneticAlgorithmA();
     //ArrayList<ArrayList> solutionCandidatesList = ga.createInitialPopulation(1, 8);
     //ArrayList<Integer> solutionCandidate = new ArrayList<>();
 

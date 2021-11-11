@@ -41,14 +41,12 @@ import org.cloudbus.cloudsim.util.SwfWorkloadFileReader;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelDynamic;
 import org.cloudbus.cloudsim.vms.Vm;
 import org.cloudbus.cloudsim.vms.VmSimple;
-import org.cloudsimplus.builders.tables.CloudletsTableBuilder;
-import org.cloudsimplus.examples.HybridModel.GeneticAlgorithmOne;
+import org.cloudsimplus.examples.HybridModel.GeneticAlgorithmA;
 import org.cloudsimplus.examples.HybridModel.MyBroker;
 import org.cloudsimplus.listeners.EventInfo;
 import org.cloudsimplus.util.Log;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * A minimal but organized, structured and re-usable CloudSim Plus example
@@ -91,7 +89,7 @@ public class InfraGreySwitcherSpace {
     private static final int CLOUDLET_PES = 2;
     private static final int CLOUDLET_LENGTH = 10_000;
 
-    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile =  4000; // Integer.MAX_VALUE
+    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile =  10000; // Integer.MAX_VALUE
     //private static final String WORKLOAD_FILENAME = "workload/swf/KTH-SP2-1996-2.1-cln.swf.gz";
     //private static final String WORKLOAD_FILENAME = "workload/swf/HPC2N-2002-2.2-cln.swf.gz";     // 202871
     private static final String WORKLOAD_FILENAME = "workload/swf/NASA-iPSC-1993-3.1-cln.swf.gz";  // 18239
@@ -104,12 +102,12 @@ public class InfraGreySwitcherSpace {
     int heuristicIndex;
     int schedulingHeuristic;
 
-    ArrayList<Integer> solutionCandidate = new ArrayList<>(Arrays.asList(4, 1, 2, 7, 0, 3, 5, 6, 3, 2, 4, 0, 1, 6, 5, 7, 7, 2, 6, 1, 4, 0, 3, 5));
+    ArrayList<Integer> solutionCandidate = new ArrayList<>(Arrays.asList(4, 3, 0, 2, 5, 6, 1, 2, 4, 5, 3, 1, 0, 6, 1, 3, 2, 6, 5, 4, 0, 2, 2, 6));
     ArrayList<ArrayList> solutionCandidatesList = new ArrayList<>();
     ArrayList<List<Cloudlet>> heuristicSpecificFinishedCloudletsList = new ArrayList<List<Cloudlet>>();
 
     // Generating Initial Population
-    GeneticAlgorithmOne ga = new GeneticAlgorithmOne();
+    GeneticAlgorithmA ga = new GeneticAlgorithmA();
     //ArrayList<ArrayList> solutionCandidatesList = ga.createInitialPopulation(1, 8);
     //ArrayList<Integer> solutionCandidate = new ArrayList<>();
 

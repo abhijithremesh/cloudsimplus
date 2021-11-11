@@ -9,7 +9,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
-public class GeneticAlgorithmOne {
+public class GeneticAlgorithmA {
+
     public ArrayList<ArrayList> createInitialPopulation(int popCount, int num_heuristic){
 
         ArrayList<Integer> chromosome = new ArrayList<Integer>();
@@ -35,8 +36,7 @@ public class GeneticAlgorithmOne {
     }
 
     // Function to generate n non-repeating random numbers
-    private static ArrayList<Integer> generateRandom(int n)
-    {
+    private static ArrayList<Integer> generateRandom(int n) {
         ArrayList<Integer> v = new ArrayList<Integer>(n);
         ArrayList<Integer> ans = new ArrayList<Integer>(n);
         for (int i = 0; i < n; i++)   // Fill the vector with the values 1, 2, 3, ..., n
@@ -70,30 +70,6 @@ public class GeneticAlgorithmOne {
             chromosome.add(temp);
         }
         return chromosome;
-    }
-
-    public double calculateFitness(DatacenterBroker broker){
-
-        List<Cloudlet> finishedCloudlets = broker.getCloudletFinishedList();
-        Cloudlet c = finishedCloudlets.get(finishedCloudlets.size()-1);
-        double tft = c.getFinishTime();
-        tft = Math.round(tft * 100.0) / 100.0;
-        return tft;
-
-    }
-
-    public Double generationFitness (ArrayList<Double> fitnessList, String flag){
-
-        //ArrayList<Double> generationFitness = new ArrayList<Double>();
-        double generationFitness = 0.0;
-        if (flag == "max"){
-            generationFitness = Collections.max(fitnessList);
-        }
-        else if (flag == "min"){
-            generationFitness = Collections.min(fitnessList);
-        }
-        return generationFitness;
-
     }
 
     public Double getGenerationAvgFittestValue (ArrayList<Double> fitnessList){
@@ -148,7 +124,6 @@ public class GeneticAlgorithmOne {
         return BestFittestChromosome;
 
     }
-
 
     public ArrayList<ArrayList> fittestEliteChromosome(ArrayList<Double> fitnessList, ArrayList<ArrayList> chromosomeList, int eliteCount, String flag) {
 
@@ -289,7 +264,7 @@ public class GeneticAlgorithmOne {
 
         double crossoverProb = Math.round(rand.nextDouble() * 100.0)/100.0;
 
-        if (crossoverProb > crossoverRate) {
+        if (crossoverProb < crossoverRate) {
             int crossoverPoint = rand.nextInt(chromosomeOne.size());
             for (int i = 0; i < chromosomeOne.size(); i++) {
                 if (i < crossoverPoint)
@@ -385,14 +360,6 @@ public class GeneticAlgorithmOne {
 
     }
 
-    public ArrayList<Integer> mutateReverse (ArrayList<Integer> chromosome){
-
-        ArrayList<Integer> childChromosomeReverse = new ArrayList<>(chromosome);
-        Collections.reverse(childChromosomeReverse);
-        return childChromosomeReverse;
-
-    }
-
     public ArrayList<ArrayList> generationEvolve(ArrayList<ArrayList> chromosomeList, ArrayList<Double> fitnessList, String flag, int eliteCount, int tournamentCount, double crossoverRate, double mutationRate){
 
         System.out.println("Candidate List: " + chromosomeList);
@@ -481,19 +448,7 @@ public class GeneticAlgorithmOne {
 
             System.out.println("childChromosome: "+childChromosome);
 
-            int mutationType = r.nextInt(1);
-
-            switch (mutationType) {
-                case 0:
-                    System.out.println("Performing Swap Mutation...");
-                    childChromosome = mutateSwap(childChromosome, mutationRate);
-                    break;
-                case 1:
-                    System.out.println("Performing Reverse Mutation...");
-                    childChromosome = mutateReverse(childChromosome);
-                    //mutatedChildChromosome = mutateSwap(childChromosome);
-                    break;
-            }
+            childChromosome = mutateSwap(childChromosome, mutationRate);
 
             System.out.println("childChromosome: " + childChromosome);
 
@@ -508,91 +463,23 @@ public class GeneticAlgorithmOne {
 
     }
 
-    public double getTotalFinishTime(List<Cloudlet> finishedCloudletList ){
-        Cloudlet c = finishedCloudletList.get(finishedCloudletList.size()-1);
-        double tft = c.getFinishTime();
-        tft = Math.round(tft * 100.0) / 100.0;
-        return tft;
-    }
-
-    public double getTotalExecutionTime(List<Cloudlet> finishedCloudlets){
-        // Total Execution Time
-        double executionTime = 0.0;
-        for (Cloudlet c : finishedCloudlets) {
-            executionTime = executionTime + c.getActualCpuTime(); }
-        executionTime = Math.round(executionTime * 100.0) / 100.0;
-        return executionTime;
-    }
-
-    public double getTotalWaitingTime(List<Cloudlet> finishedCloudletList ){
-        double twt = 0.0;
-        for (Cloudlet c:finishedCloudletList ) {
-            twt = twt + c.getWaitingTime(); }
-        twt = Math.round(twt * 100.0) / 100.0;
-        return twt;
-    }
-
-    public double getTotalFlowTime(List<Cloudlet> finishedCloudlets){
-        // Total Flow Time
-        double executionTime = 0.0;
-        double waitingTime = 0.0;
-        for (Cloudlet c : finishedCloudlets) {
-            executionTime = executionTime + c.getActualCpuTime();
-            waitingTime = waitingTime + c.getWaitingTime();
-        }
-        double flowTime = executionTime + waitingTime;
-        flowTime = Math.round(flowTime * 100.0) / 100.0;
-        return flowTime;
-    }
-
-    public double getAverageExecutionTime(List<Cloudlet> finishedCloudlets){
-        // Average Execution time
-        double executionTime = 0.0;
-        for (Cloudlet c : finishedCloudlets) {
-            executionTime = executionTime + c.getActualCpuTime();
-        }
-        double averageExecutionTime = executionTime/finishedCloudlets.size();
-        averageExecutionTime = Math.round(averageExecutionTime * 100.0) / 100.0;
-        return averageExecutionTime;
-    }
 
 
-    public double getAverageWaitingTime(List<Cloudlet> finishedCloudlets){
-        // Average waiting time
-        double waitingTime = 0.0;
-        for (Cloudlet c : finishedCloudlets) {
-            waitingTime = waitingTime + c.getWaitingTime();
-        }
-        double averageWaitingTime = waitingTime/finishedCloudlets.size();
-        averageWaitingTime = Math.round(averageWaitingTime * 100.0) / 100.0;
-        return averageWaitingTime;
-    }
 
 
-    public double getAverageFlowTime(List<Cloudlet> finishedCloudlets){
-        // Total Flow Time
-        double executionTime = 0.0;
-        double waitingTime = 0.0;
-        for (Cloudlet c : finishedCloudlets) {
-            executionTime = executionTime + c.getActualCpuTime();
-            waitingTime = waitingTime + c.getWaitingTime();
-        }
-        double averageFlowTime = ((waitingTime/finishedCloudlets.size()) + (executionTime/finishedCloudlets.size()))/finishedCloudlets.size();
-        averageFlowTime = Math.round(averageFlowTime * 100.0) / 100.0;
-        return averageFlowTime ;
-    }
 
 
-    public double calculateFitnessFunctionFour(DatacenterBroker broker){
 
-        List<Cloudlet> finishedCloudlets = broker.getCloudletFinishedList();
-        double fitnessValue = getTotalFinishTime(finishedCloudlets) + getAverageWaitingTime(finishedCloudlets) + getAverageExecutionTime(finishedCloudlets);
 
-        fitnessValue = Math.round(fitnessValue * 100.0) / 100.0;
 
-        return fitnessValue;
 
-    }
+
+
+
+
+
+
+
 
 
 
