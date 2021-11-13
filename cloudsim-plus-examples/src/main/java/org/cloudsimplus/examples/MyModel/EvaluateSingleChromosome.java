@@ -24,6 +24,7 @@
 package org.cloudsimplus.examples.MyModel;
 
 import ch.qos.logback.classic.Level;
+import org.cloudbus.cloudsim.brokers.DatacenterBroker;
 import org.cloudbus.cloudsim.cloudlets.Cloudlet;
 import org.cloudbus.cloudsim.cloudlets.CloudletExecution;
 import org.cloudbus.cloudsim.cloudlets.CloudletSimple;
@@ -32,6 +33,7 @@ import org.cloudbus.cloudsim.datacenters.Datacenter;
 import org.cloudbus.cloudsim.datacenters.DatacenterSimple;
 import org.cloudbus.cloudsim.hosts.Host;
 import org.cloudbus.cloudsim.hosts.HostSimple;
+import org.cloudbus.cloudsim.power.models.PowerModelHostSpec;
 import org.cloudbus.cloudsim.resources.Pe;
 import org.cloudbus.cloudsim.resources.PeSimple;
 import org.cloudbus.cloudsim.schedulers.cloudlet.CloudletSchedulerSpaceShared;
@@ -41,12 +43,13 @@ import org.cloudbus.cloudsim.util.SwfWorkloadFileReader;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelDynamic;
 import org.cloudbus.cloudsim.vms.Vm;
 import org.cloudbus.cloudsim.vms.VmSimple;
-import org.cloudsimplus.examples.HybridModel.GeneticAlgorithmA;
 import org.cloudsimplus.examples.HybridModel.MyBroker;
 import org.cloudsimplus.listeners.EventInfo;
 import org.cloudsimplus.util.Log;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * A minimal but organized, structured and re-usable CloudSim Plus example
@@ -61,7 +64,7 @@ import java.util.*;
  */
 
 
-public class BasicNew {
+public class EvaluateSingleChromosome {
 
     private static final double INTERVAL = 25;
     private static final int  HOSTS = 20;
@@ -89,7 +92,8 @@ public class BasicNew {
     private static final int CLOUDLET_PES = 2;
     private static final int CLOUDLET_LENGTH = 10_000;
 
-    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile =  Integer.MAX_VALUE; // Integer.MAX_VALUE
+
+    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile =  10000; // Integer.MAX_VALUE
     //private static final String WORKLOAD_FILENAME = "workload/swf/KTH-SP2-1996-2.1-cln.swf.gz";
     //private static final String WORKLOAD_FILENAME = "workload/swf/HPC2N-2002-2.2-cln.swf.gz";     // 202871
     private static final String WORKLOAD_FILENAME = "workload/swf/NASA-iPSC-1993-3.1-cln.swf.gz";  // 18239
@@ -102,98 +106,77 @@ public class BasicNew {
     int heuristicIndex;
     int schedulingHeuristic;
 
+    List<Double> powerSpecList = Stream.iterate(1.0, n -> n + 1.0).limit(100).collect(Collectors.toList());
+    //List<Double> powerSpecList = Stream.iterate(10.0, n -> n + 10.0).limit(10).collect(Collectors.toList());
+    List<Double> powerModelSpecPowerHpProLiantMl110G3PentiumD930 = Arrays.asList(105.0, 112.0, 118.0, 125.0, 131.0, 137.0, 147.0, 153.0, 157.0, 164.0, 169.0 );
+    List<Double> powerModelSpecPowerHpProLiantMl110G4Xeon3040 = Arrays.asList(86.0, 89.4, 92.6, 96.0, 99.5, 102.0, 106.0, 108.0, 112.0, 114.0, 117.0);
+    List<Double> powerModelSpecPowerHpProLiantMl110G5Xeon3075 = Arrays.asList(93.7, 97.0, 101.0, 105.0, 110.0, 116.0, 121.0, 125.0, 129.0, 133.0, 135.0);
+    List<Double> powerModelSpecPowerIbmX3250XeonX3470 = Arrays.asList(41.6, 46.7, 52.3, 57.9, 65.4, 73.0, 80.7, 89.5, 99.6, 105.0, 113.0);
+    List<Double> powerModelSpecPowerIbmX3250XeonX3480 = Arrays.asList(42.3, 46.7, 49.7, 55.4, 61.8, 69.3, 76.1, 87.0, 96.1, 106.0, 113.0);
+    List<Double> powerModelSpecPowerIbmX3550XeonX5670 = Arrays.asList(66.0, 107.0, 120.0, 131.0, 143.0, 156.0, 173.0, 191.0, 211.0, 229.0, 247.0);
+    List<Double> powerModelSpecPowerIbmX3550XeonX5675 = Arrays.asList(58.4, 98.0, 109.0, 118.0, 128.0, 140.0, 153.0, 170.0, 189.0, 205.0, 222.0);
+
+
     ArrayList<List<Cloudlet>> heuristicSpecificFinishedCloudletsList = new ArrayList<List<Cloudlet>>();
 
-    // Generating Initial Population
+    String n = "405342361065511322163621";
+
     Chromosome solutionCandidate;
 
-
     public static void main(String[] args) {
-        new BasicNew();
+        new EvaluateSingleChromosome();
     }
 
-    private BasicNew() {
+    private EvaluateSingleChromosome() {
 
         Log.setLevel(Level.OFF);
 
-        GeneticAlgorithmNew gnew = new GeneticAlgorithmNew();
-        List<Chromosome> chromosomeList = gnew.createInitialPopulation(10, 24, 7);
+        solutionCandidate = convertToChromosome(n);
 
-        for (int generation = 0; generation < 10; generation++) {
+        heuristicIndex = 0;
 
-            System.out.println("*********************************Generation "+generation+" starts**************************************\n");
+        simulation = new CloudSim();
 
-            for (int i = 0; i < chromosomeList.size(); i++) {
+        datacenter0 = createDatacenter();
 
-                System.out.println("*********************Chromosome "+i+" of generation "+generation+" starts***************************************\n");
+        broker0 = new MyBroker(simulation);
 
-                heuristicIndex = 0;
+        vmList = createVmsSpaceShared();
 
-                simulation = new CloudSim();
+        //cloudletList = createCloudlets();
+        cloudletList = createCloudletsFromWorkloadFile();
 
-                datacenter0 = createDatacenter();
-                //datacenter0.setSchedulingInterval(10);
+        considerSubmissionTimes(0);
 
-                broker0 = new MyBroker(simulation);
+        simulation.addOnClockTickListener(this::pauseSimulation);
+        simulation.addOnSimulationPauseListener(this::switchSchedulingHeuristics);
 
-                vmList = createVmsSpaceShared();
+        broker0.submitVmList(vmList);
+        broker0.submitCloudletList(cloudletList);
 
-                //cloudletList = createCloudlets();
-                cloudletList = createCloudletsFromWorkloadFile();
+        solutionCandidate.getGeneList().forEach(gene -> System.out.print(gene.getSchedulingHeuristic()));
+        schedulingHeuristic = solutionCandidate.getGeneList().get(heuristicIndex).getSchedulingHeuristic();
+        System.out.println("\n\nHeuristic Switched to " + schedulingHeuristic);
+        broker0.selectSchedulingPolicy(schedulingHeuristic, vmList);
 
-                considerSubmissionTimes(0);
+        simulation.start();
 
-                simulation.addOnClockTickListener(this::pauseSimulation);
-                simulation.addOnSimulationPauseListener(this::switchSchedulingHeuristics);
-
-                broker0.submitVmList(vmList);
-                broker0.submitCloudletList(cloudletList);
-
-                solutionCandidate = chromosomeList.get(i);
-                solutionCandidate.getGeneList().forEach(gene -> System.out.print(gene.getSchedulingHeuristic()+" "));
-                schedulingHeuristic = solutionCandidate.getGeneList().get(heuristicIndex).getSchedulingHeuristic();
-                System.out.println("\n\nHeuristic Switched to " + schedulingHeuristic);
-                broker0.selectSchedulingPolicy(schedulingHeuristic, vmList);
-
-                //broker0.Random(vmList);
-                //broker0.FirstComeFirstServe(vmList);
-                //broker0.LongestJobFirst(vmList);
-                //broker0.ShortestJobFirst(vmList);
-                //broker0.ShortestCloudletFastestPE(vmList);
-                //broker0.LongestCloudletFastestPE(vmList);
-                //broker0.MinimumCompletionTime(vmList);
-                //broker0.MinimumExecutionTime(vmList);
-                //broker0.MinMin(vmList);
-                //broker0.MaxMin(vmList);
-                //broker0.Sufferage(vmList);
-
-                simulation.start();
-
-                final List<Cloudlet> finishedCloudlets = broker0.getCloudletFinishedList();
-                System.out.println("\nfinishedCloudlets : " + finishedCloudlets.size());
-
-                gnew.computeMakespan(broker0, chromosomeList);
-
-                System.out.println("*********************************Chromosome "+i+" of generation "+generation+" ends********************************\n");
-
-            }
-
-            gnew.generationBest();
-
-            System.out.println("\n*********************************Generation "+generation+" ends**************************************\n");
-
-            gnew.elitismSelection(2);
-            gnew.parentSelectionCrossoverMutation();
-
-            chromosomeList = gnew.getNextPopulation();
-
-
-
-
-        }
+        printPerformanceMetrics(datacenter0,broker0);
 
     }
 
+    public Chromosome convertToChromosome(String n){
+        ArrayList<Gene> newChromosome = new ArrayList<>();
+        for(int i=0; i<n.length();i++){
+            char c = n.charAt(i);
+            int v = Character.getNumericValue(c);
+            Gene g = new Gene();
+            g.setSchedulingHeuristic(v);
+            newChromosome.add(g);
+        }
+        Chromosome chro = new Chromosome(newChromosome);
+        return chro;
+    }
 
     public void switchSchedulingHeuristics(EventInfo pauseInfo) {
 
@@ -252,7 +235,7 @@ public class BasicNew {
             simulation.pause();
             System.out.printf("%n# Simulation paused at %.2f second%n%n", Math.floor(simulation.clock()));
 
-            postSimulationHeuristicSpecificFinishedCloudlets(broker0);
+            //postSimulationHeuristicSpecificFinishedCloudlets(broker0);
 
             System.out.printf("Total Cloudlets processed: "+broker0.getCloudletFinishedList().size()+"%n");
 
@@ -277,8 +260,11 @@ public class BasicNew {
         for (int i = 0; i < HOST_PES; i++) {
             peList.add(new PeSimple(HOST_MIPS));
         }
+        //PowerModelHost powerModel = new PowerModelHostSimple(50, 35);
+        PowerModelHostSpec powerModel = new PowerModelHostSpec(powerSpecList);
         Host h = new HostSimple(HOST_RAM, HOST_BW, HOST_STORAGE, peList);
-        h.setVmScheduler(new VmSchedulerSpaceShared());
+        h.setVmScheduler(new VmSchedulerSpaceShared()).setPowerModel(powerModel);
+        h.enableUtilizationStats();
         return h;
     }
 
@@ -289,6 +275,7 @@ public class BasicNew {
             final Vm vm = new VmSimple(VM_MIPS, VM_PES);
             vm.setRam(VM_RAM).setBw(VM_BW).setSize(VM_STORAGE);
             vm.setCloudletScheduler(new CloudletSchedulerSpaceShared());
+            vm.enableUtilizationStats();
             list.add(vm);
         }
         return list;
@@ -358,96 +345,36 @@ public class BasicNew {
 
     }
 
-    private double evaluatePerformanceMetrics(String metric) {
+    public void printPerformanceMetrics(Datacenter datacenter, DatacenterBroker broker){
 
-        double metricValue = 0;
-        double makespan = broker0.getCloudletFinishedList().get(broker0.getCloudletFinishedList().size() - 1).getFinishTime();
+        double makespan = roundDecimals(broker.getCloudletFinishedList().get(broker.getCloudletFinishedList().size()-1).getFinishTime());
+        double throughput = broker.getCloudletFinishedList().size()/makespan;
 
-        double totalResponseTime = 0.0;
-        double totalWaitingTime = 0.0;
-        double totalExecutionTime = 0.0;
-        for (Cloudlet c : broker0.getCloudletFinishedList()
+        System.out.println("finishedCloudlets: "+broker.getCloudletFinishedList().size());
+        System.out.println("makespan: "+makespan);
+        System.out.println("throughput: "+throughput);
+
+        List<Double> totalHostCpuUtilizationList = new ArrayList<>();
+        double totalHostCpuUtilization = 0;
+        double totalHostPowerConsumption = 0;
+        for (Host h: datacenter.getHostList()
         ) {
-
-            totalResponseTime = totalResponseTime + (c.getSubmissionDelay() + c.getWaitingTime() + c.getActualCpuTime());
-            totalWaitingTime = totalWaitingTime + c.getWaitingTime();
-            totalExecutionTime = totalExecutionTime + c.getActualCpuTime();
-
+            double utilizationPercentMean = h.getCpuUtilizationStats().getMean();
+            double utilizationPercentCount = h.getCpuUtilizationStats().count();
+            double watts = h.getPowerModel().getPower(utilizationPercentMean);
+            totalHostCpuUtilizationList.add(roundDecimals(utilizationPercentMean));
+            totalHostCpuUtilization += utilizationPercentMean;
+            totalHostPowerConsumption += watts;
         }
 
-        Cloudlet firstCloudlet = broker0.getCloudletFinishedList().get(0);
-        double responseTime = firstCloudlet.getFinishTime() - firstCloudlet.getArrivalTime(firstCloudlet.getVm().getHost().getDatacenter());
+        System.out.println("totalHostCpuUtilization: "+roundDecimals(totalHostCpuUtilization*100));
+        System.out.println("totalHostCpuUtilizationList: "+totalHostCpuUtilizationList);
+        System.out.println("totalHostPowerConsumption: "+roundDecimals(totalHostPowerConsumption));
 
-        double totalVmRunTime = 0.0;
-        for (Vm v : vmList
-        ) {
-            totalVmRunTime = totalVmRunTime + v.getTotalExecutionTime();
-        }
+    }
 
-        double degreeOfImbalance = 0;
-        List <Double> vmExecTimeList = new ArrayList<Double>();
-        for (Vm v: broker0.getVmCreatedList()
-        ) {
-            vmExecTimeList.add(v.getTotalExecutionTime());
-        }
-        //System.out.println(vmExecTimeList);
-        degreeOfImbalance = (Collections.max(vmExecTimeList) - Collections.min(vmExecTimeList))/vmExecTimeList.stream().mapToDouble(d -> d).average().orElse(0.0);
-        //degreeOfImbalance = (Collections.max(vmExecTimeList) + Collections.min(vmExecTimeList))/vmExecTimeList.stream().mapToDouble(d -> d).average().orElse(0.0);
-
-        double costPerSecond = (0.12 + 0.13 + 0.17 + 0.48 + 0.52 + 0.96)/3600 ;
-        double totalVmCost = totalVmRunTime * costPerSecond;
-
-        double throughput = broker0.getCloudletFinishedList().size() / makespan;
-
-
-
-        if (metric == "makespan") {
-            metricValue = makespan;
-            System.out.println("makespan: " + ((double)Math.round(metricValue *  100.0)/100));
-        } else if (metric == "totalResponseTime") {
-            metricValue = totalResponseTime;
-            System.out.println("totalResponseTime: " + ((double)Math.round(metricValue *  100.0)/100));
-        } else if (metric == "avgResponseTime") {
-            metricValue = totalResponseTime / cloudletList.size();
-            System.out.println("avgResponseTime: " + ((double)Math.round(metricValue *  100.0)/100) );
-        } else if (metric == "totalWaitingTime") {
-            metricValue = totalWaitingTime;
-            System.out.println("totalWaitingTime: " + ((double)Math.round(metricValue *  100.0)/100));
-        } else if (metric == "avgWaitingTime") {
-            metricValue = totalWaitingTime / cloudletList.size();
-            System.out.println("avgWaitingTime: " + ((double)Math.round(metricValue *  100.0)/100) );
-        } else if (metric == "totalExecutionTime"){
-            metricValue = totalExecutionTime;
-            System.out.println("Total Execution Time: "+((double)Math.round(metricValue *  100.0)/100) );
-        } else if (metric == "avgExecutionTime"){
-            metricValue = totalExecutionTime/cloudletList.size();
-            System.out.println("avgExecutionTime: "+ ((double)Math.round(metricValue *  100.0)/100)  );
-        } else if (metric == "totalVmRunTime"){
-            metricValue = totalVmRunTime;
-            System.out.println("totalVmRunTime: "+totalVmRunTime);
-        } else if (metric == "SlowdownRatio") {
-            metricValue = (totalResponseTime / cloudletList.size()) / (totalExecutionTime / cloudletList.size());
-            System.out.println("SlowdownRatio: " +((double)Math.round(metricValue *  100.0)/100)  );
-        } else if(metric == "processorUtilization"){
-            metricValue = totalVmRunTime/simulation.getLastCloudletProcessingUpdate();
-            System.out.println("processorUtilization: "+((double)Math.round(metricValue *  100.0)/100));
-        } else if (metric == "degreeOfImbalance") {
-            metricValue = degreeOfImbalance;
-            System.out.println("degreeOfImbalance: " + ((double) Math.round(metricValue * 100.0) / 100));
-        } else if (metric == "totalVmCost")   {
-            metricValue = totalVmCost;
-            System.out.println("totalVmCost: " + ((double) Math.round(metricValue * 100.0) / 100));
-        } else if (metric == "throughput") {
-            metricValue = throughput;
-            System.out.println("throughput: " + ((double) Math.round(metricValue * 100.0) / 100));
-        } else if (metric == "responseTime") {
-            metricValue = responseTime;
-            System.out.println("responseTime: " + ((double) Math.round(metricValue * 100.0) / 100));
-        }
-
-        //return ((double)Math.round(metricValue *  100.0)/100);
-        return metricValue;
-
+    private double roundDecimals(double value){
+        return  Math.round(value * 100.0) / 100.0;
     }
 
     public void postSimulationHeuristicSpecificFinishedCloudlets(MyBroker myBroker){
@@ -473,9 +400,8 @@ public class BasicNew {
 
         //new CloudletsTableBuilder(heuristicSpecificFinishedCloudlets).build();
         System.out.printf("Heuristic Cloudlets processed: "+heuristicSpecificFinishedCloudlets.size()+"%n");
-        //System.out.println("Cloudlets Heuristics processed: "+heuristicSpecificFinishedCloudlets);
-        //new CloudletsTableBuilder(heuristicSpecificFinishedCloudlets).build();
 
     }
+
 
 }

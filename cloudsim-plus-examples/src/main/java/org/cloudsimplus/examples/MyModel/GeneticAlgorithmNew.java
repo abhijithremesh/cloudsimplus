@@ -1,5 +1,8 @@
 package org.cloudsimplus.examples.MyModel;
 
+import org.cloudbus.cloudsim.brokers.DatacenterBroker;
+import org.cloudbus.cloudsim.datacenters.Datacenter;
+import org.cloudbus.cloudsim.hosts.Host;
 import org.cloudsimplus.examples.HybridModel.MyBroker;
 
 import java.util.ArrayList;
@@ -37,38 +40,15 @@ public class GeneticAlgorithmNew {
     public void computeMakespan(MyBroker broker, List<Chromosome> chromosomeList){
 
         double makespan = broker.getCloudletFinishedList().get(broker.getCloudletFinishedList().size() - 1).getFinishTime();
-        this.fitnessList.add(makespan);
+        System.out.println("Makespan: "+roundDecimals(makespan));
+        this.fitnessList.add(roundDecimals(makespan));
         this. chromosomeList = chromosomeList;
-        System.out.println("Makespan: "+makespan);
+
 
         System.out.println("chromosomeList: ");
-        for (Chromosome c: chromosomeList
-             ) {
-            c.getGeneList().forEach(gene -> System.out.print(gene.getSchedulingHeuristic()));
-            System.out.print(" ");
-        }
+        printChromosomes(chromosomeList);
 
         System.out.println("\nfitnessList: "+fitnessList);
-
-    }
-
-    public void generationBest(){
-
-        List<Chromosome> chromosomeList = this.chromosomeList;
-        List<Double> fitnessList = this.fitnessList;
-
-        generationBestFitnessValueList.add(Collections.min(fitnessList));
-        generationBestChromosomeList.add(chromosomeList.get(fitnessList.indexOf(Collections.min(fitnessList))));
-
-        System.out.println("generationBestFitnessValueList: "+generationBestFitnessValueList);
-        System.out.print("generationBestChromosomeList: ");
-        for (Chromosome c: generationBestChromosomeList
-             ) {
-            c.getGeneList().forEach(gene -> System.out.print(gene.getSchedulingHeuristic()));
-            System.out.print(" ");
-        }
-        System.out.println();
-
 
     }
 
@@ -88,13 +68,7 @@ public class GeneticAlgorithmNew {
         this.nextPopulation.addAll(eliteChromosomes);
 
         System.out.print("eliteChromosomes: ");
-        for (Chromosome c: eliteChromosomes
-        ) {
-            c.getGeneList().forEach(gene -> System.out.print(gene.getSchedulingHeuristic()));
-            System.out.print(" ");
-        }
-        System.out.println();
-        System.out.println();
+        printChromosomes(eliteChromosomes);
 
 
     }
@@ -112,11 +86,13 @@ public class GeneticAlgorithmNew {
         chromosomeIndices.forEach(integer -> fitnessValues.add(fitnessList.get(integer)));
         System.out.println(fitnessValues);
 
-        chromosomeList.get(chromosomeIndices.get(fitnessValues.indexOf(Collections.min(fitnessValues)))).getGeneList().forEach(gene -> System.out.print(gene.getSchedulingHeuristic()));
-        System.out.println();
 
-        return chromosomeList.get(chromosomeIndices.get(fitnessValues.indexOf(Collections.min(fitnessValues))));
+        Chromosome tourChromosome = chromosomeList.get(chromosomeIndices.get(fitnessValues.indexOf(Collections.min(fitnessValues))));
 
+        System.out.print("tournamentChromosome: ");
+        printChromosome(tourChromosome);
+
+        return tourChromosome;
 
     }
 
@@ -128,11 +104,10 @@ public class GeneticAlgorithmNew {
             Chromosome parentChromosomeTwo = tournamentSelection(3);
 
             System.out.print("parentChromosomeOne: ");
-            parentChromosomeOne.getGeneList().forEach(gene -> System.out.print(gene.getSchedulingHeuristic()));
-            System.out.println();
+            printChromosome(parentChromosomeOne);
+
             System.out.print("parentChromosomeTwo: ");
-            parentChromosomeTwo.getGeneList().forEach(gene -> System.out.print(gene.getSchedulingHeuristic()));
-            System.out.println();
+            printChromosome(parentChromosomeTwo);
 
             Chromosome childChromosome = null;
 
@@ -154,8 +129,6 @@ public class GeneticAlgorithmNew {
                     childChromosome = uniformCrossover(parentChromosomeOne,parentChromosomeTwo,0.9);
                     break;
             }
-
-            System.out.println();
 
             this.childChromosomesList.add(childChromosome);
 
@@ -198,15 +171,13 @@ public class GeneticAlgorithmNew {
             }
             Chromosome childChromosome = new Chromosome(newChromosome);
             System.out.print("childChromosome: ");
-            childChromosome.getGeneList().forEach(gene -> System.out.print(gene.getSchedulingHeuristic()));
-            System.out.println();
+            printChromosome(childChromosome);
             return childChromosome;
         } else {
             Chromosome childChromosome;
             childChromosome = ((new Random().nextInt(2) == 0) ? parentChromosomeOne : parentChromosomeTwo);
             System.out.print("childChromosome: ");
-            childChromosome.getGeneList().forEach(gene -> System.out.print(gene.getSchedulingHeuristic()));
-            System.out.println();
+            printChromosome(childChromosome);
             return childChromosome;
         }
 
@@ -249,15 +220,13 @@ public class GeneticAlgorithmNew {
 
             Chromosome childChromosome = new Chromosome(newChromosome);
             System.out.print("childChromosome: ");
-            childChromosome.getGeneList().forEach(gene -> System.out.print(gene.getSchedulingHeuristic()));
-            System.out.println();
+            printChromosome(childChromosome);
             return childChromosome;
         } else {
             Chromosome childChromosome;
             childChromosome = ((new Random().nextInt(2) == 0) ? parentChromosomeOne : parentChromosomeTwo);
             System.out.print("childChromosome: ");
-            childChromosome.getGeneList().forEach(gene -> System.out.print(gene.getSchedulingHeuristic()));
-            System.out.println();
+            printChromosome(childChromosome);
             return childChromosome;
         }
 
@@ -280,15 +249,13 @@ public class GeneticAlgorithmNew {
             }
             Chromosome childChromosome = new Chromosome(newChromosome);
             System.out.print("childChromosome: ");
-            childChromosome.getGeneList().forEach(gene -> System.out.print(gene.getSchedulingHeuristic()));
-            System.out.println();
+            printChromosome(childChromosome);
             return childChromosome;
         } else {
             Chromosome childChromosome;
             childChromosome = ((new Random().nextInt(2) == 0) ? parentChromosomeOne : parentChromosomeTwo);
             System.out.print("childChromosome: ");
-            childChromosome.getGeneList().forEach(gene -> System.out.print(gene.getSchedulingHeuristic()));
-            System.out.println();
+            printChromosome(childChromosome);
             return childChromosome;
         }
 
@@ -311,15 +278,13 @@ public class GeneticAlgorithmNew {
             }
             Chromosome childChromosome = new Chromosome(newChromosome);
             System.out.print("childChromosome: ");
-            childChromosome.getGeneList().forEach(gene -> System.out.print(gene.getSchedulingHeuristic()));
-            System.out.println();
+            printChromosome(childChromosome);
             return childChromosome;
         } else {
             Chromosome childChromosome;
             childChromosome = ((new Random().nextInt(2) == 0) ? parentChromosomeOne : parentChromosomeTwo);
             System.out.print("childChromosome: ");
-            childChromosome.getGeneList().forEach(gene -> System.out.print(gene.getSchedulingHeuristic()));
-            System.out.println();
+            printChromosome(childChromosome);
             return childChromosome;
         }
 
@@ -353,15 +318,13 @@ public class GeneticAlgorithmNew {
             mutatedChildChromosome.getGeneList().set(upperLim, g1);
 
             System.out.print("mutatedChildChromosome: ");
-            mutatedChildChromosome.getGeneList().forEach(gene -> System.out.print(gene.getSchedulingHeuristic()));
-            System.out.println();
+            printChromosome(mutatedChildChromosome);
 
             return mutatedChildChromosome;
         } else {
             Chromosome mutatedChildChromosome = new Chromosome(childChromosome.getGeneList());
             System.out.print("mutatedChildChromosome: ");
-            mutatedChildChromosome.getGeneList().forEach(gene -> System.out.print(gene.getSchedulingHeuristic()));
-            System.out.println();
+            printChromosome(mutatedChildChromosome);
             return mutatedChildChromosome;
 
         }
@@ -381,6 +344,95 @@ public class GeneticAlgorithmNew {
         List<Chromosome> nextPop = new ArrayList<>(nextPopulation);
         this.nextPopulation.clear();
         return nextPop;
+    }
+
+    public void generationBest(){
+
+        List<Chromosome> chromosomeList = this.chromosomeList;
+        List<Double> fitnessList = this.fitnessList;
+
+        generationBestFitnessValueList.add(Collections.min(fitnessList));
+        generationBestChromosomeList.add(chromosomeList.get(fitnessList.indexOf(Collections.min(fitnessList))));
+
+        System.out.println("generationBestFitnessValueList: "+generationBestFitnessValueList);
+        System.out.print("generationBestChromosomeList: ");
+        for (Chromosome c: generationBestChromosomeList
+        ) {
+            c.getGeneList().forEach(gene -> System.out.print(gene.getSchedulingHeuristic()));
+            System.out.print(" ");
+        }
+        System.out.println();
+
+
+    }
+
+    public void computeFitness(Datacenter datacenter, DatacenterBroker broker, List<Chromosome> chromosomeList){
+
+        double a = 1, b= 1;
+        double makespan = broker.getCloudletFinishedList().get(broker.getCloudletFinishedList().size()-1).getFinishTime();
+        double totalHostPowerConsumption =0;
+        for (Host h: datacenter.getHostList()
+        ) {
+            double utilizationPercentMean = h.getCpuUtilizationStats().getMean();
+            double watts = h.getPowerModel().getPower(utilizationPercentMean);
+            totalHostPowerConsumption += watts;
+        }
+        double fitness = a * makespan + b * totalHostPowerConsumption;
+
+        this.fitnessList.add(fitness);
+        this. chromosomeList = chromosomeList;
+
+        System.out.println("chromosomeList: ");
+        printChromosomes(chromosomeList);
+
+        System.out.println("\nfitnessList: "+fitnessList);
+
+    }
+
+    public void printPerformanceMetrics(Datacenter datacenter, DatacenterBroker broker){
+
+        double makespan = roundDecimals(broker.getCloudletFinishedList().get(broker.getCloudletFinishedList().size()-1).getFinishTime());
+        double throughput = roundDecimals(broker.getCloudletFinishedList().size()/makespan);
+
+        System.out.println("finishedCloudlets: "+broker.getCloudletFinishedList().size());
+        System.out.println("makespan: "+makespan);
+        System.out.println("throughput: "+throughput);
+
+        List<Double> HostCpuUtilizationList = new ArrayList<>();
+        double totalHostCpuUtilization = 0;
+        double totalHostPowerConsumption = 0;
+        for (Host h: datacenter.getHostList()
+        ) {
+            double utilizationPercentMean = h.getCpuUtilizationStats().getMean();
+            double utilizationPercentCount = h.getCpuUtilizationStats().count();
+            double watts = h.getPowerModel().getPower(utilizationPercentMean);
+            HostCpuUtilizationList.add(roundDecimals(utilizationPercentMean));
+            totalHostCpuUtilization += utilizationPercentMean;
+            totalHostPowerConsumption += watts;
+        }
+
+        System.out.println("totalHostCpuUtilization: "+roundDecimals(totalHostCpuUtilization*100));
+        System.out.println("HostCpuUtilizationList: "+HostCpuUtilizationList);
+        System.out.println("totalHostPowerConsumption: "+roundDecimals(totalHostPowerConsumption));
+
+    }
+
+    private double roundDecimals(double value){
+        return  Math.round(value * 100.0) / 100.0;
+    }
+
+    private void printChromosomes(List<Chromosome> chromosomeList){
+        for (Chromosome c: chromosomeList
+        ) {
+            c.getGeneList().forEach(gene -> System.out.print(gene.getSchedulingHeuristic()));
+            System.out.print(" ");
+        }
+        System.out.println();
+    }
+
+    private void printChromosome(Chromosome chromosome){
+        chromosome.getGeneList().forEach(gene -> System.out.print(gene.getSchedulingHeuristic()));
+        System.out.println();
     }
 
 }
