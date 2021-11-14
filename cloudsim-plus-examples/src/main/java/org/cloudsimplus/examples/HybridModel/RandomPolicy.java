@@ -11,39 +11,27 @@ public class RandomPolicy {
 
     MyBroker myBroker;
     List<Vm> vmList;
+    List<Cloudlet> cloudletList;
 
-    RandomPolicy (MyBroker myBroker, List<Vm> vmList){
+    RandomPolicy (MyBroker myBroker, List<Vm> vmList, List<Cloudlet> cloudletList){
 
         this.myBroker = myBroker;
         this.vmList = vmList;
+        this.cloudletList = cloudletList;
 
     }
 
     public void schedule() {
 
-        Random random = new Random();
-
         System.out.println("Scheduling with Random Policy");
 
-        System.out.println("Cloudlets waiting: "+myBroker.getCloudletWaitingList().size());
-
-        myBroker.getCloudletSubmittedList().removeAll(myBroker.getCloudletFinishedList());
-
-        System.out.println("Cloudlets remaining: "+myBroker.getCloudletSubmittedList().size());
-
-        List<Cloudlet> cloudletList= myBroker.getCloudletSubmittedList();
-
-
         for (int i = 0; i <cloudletList.size(); i++){
-
             Cloudlet cl = cloudletList.get(i);
-            int v = random.nextInt(vmList.size());
+            int v = new Random().nextInt(vmList.size());
             Vm vm = vmList.get(v);
             myBroker.bindCloudletToVm(cl, vm);
-
         }
 
-        System.out.println("finished scheduling..");
 
     }
 }

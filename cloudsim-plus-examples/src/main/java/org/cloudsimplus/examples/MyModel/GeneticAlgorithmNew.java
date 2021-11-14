@@ -114,19 +114,19 @@ public class GeneticAlgorithmNew {
             switch (new Random().nextInt(4)){
                 case 0:
                     System.out.println("Performing Single Point Crossover.....");
-                    childChromosome = singlePointCrossover(parentChromosomeOne,parentChromosomeTwo,0.9);
+                    childChromosome = singlePointCrossover(parentChromosomeOne,parentChromosomeTwo,0.5);
                     break;
                 case 1:
                     System.out.println("Performing Two Point Crossover.....");
-                    childChromosome = twoPointCrossover(parentChromosomeOne,parentChromosomeTwo,0.9);
+                    childChromosome = twoPointCrossover(parentChromosomeOne,parentChromosomeTwo,0.5);
                     break;
                 case 2:
                     System.out.println("Performing Random Crossover.....");
-                    childChromosome = randomCrossover(parentChromosomeOne,parentChromosomeTwo,0.9);
+                    childChromosome = randomCrossover(parentChromosomeOne,parentChromosomeTwo,0.5);
                     break;
                 case 3:
                     System.out.println("Performing Uniform Crossover.....");
-                    childChromosome = uniformCrossover(parentChromosomeOne,parentChromosomeTwo,0.9);
+                    childChromosome = uniformCrossover(parentChromosomeOne,parentChromosomeTwo,0.5);
                     break;
             }
 
@@ -135,14 +135,13 @@ public class GeneticAlgorithmNew {
         }
 
 
-        mutateChildChromosomes(childChromosomesList, 0.9);
+        mutateChildChromosomes(childChromosomesList, 0.4);
 
         this.nextPopulation.addAll(childChromosomesList);
         System.out.println("nextPopulationSize: "+nextPopulation.size());
 
         System.out.print("nextPopulationFirstCandidate: ");
-        nextPopulation.get(0).getGeneList().forEach(gene -> System.out.print(gene.getSchedulingHeuristic()+" "));
-
+        printChromosome(nextPopulation.get(0));
 
         this.fitnessList.clear();
         this.childChromosomesList.clear();
@@ -379,7 +378,7 @@ public class GeneticAlgorithmNew {
         }
         double fitness = a * makespan + b * totalHostPowerConsumption;
 
-        this.fitnessList.add(fitness);
+        this.fitnessList.add(roundDecimals(fitness));
         this. chromosomeList = chromosomeList;
 
         System.out.println("chromosomeList: ");
@@ -411,8 +410,8 @@ public class GeneticAlgorithmNew {
             totalHostPowerConsumption += watts;
         }
 
-        System.out.println("totalHostCpuUtilization: "+roundDecimals(totalHostCpuUtilization*100));
-        System.out.println("HostCpuUtilizationList: "+HostCpuUtilizationList);
+        //System.out.println("totalHostCpuUtilization: "+roundDecimals(totalHostCpuUtilization*100));
+        //System.out.println("HostCpuUtilizationList: "+HostCpuUtilizationList);
         System.out.println("totalHostPowerConsumption: "+roundDecimals(totalHostPowerConsumption));
 
     }

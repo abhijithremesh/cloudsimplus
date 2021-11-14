@@ -93,7 +93,7 @@ public class EvaluateSingleChromosome {
     private static final int CLOUDLET_LENGTH = 10_000;
 
 
-    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile =  10000; // Integer.MAX_VALUE
+    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile =  16000; // Integer.MAX_VALUE
     //private static final String WORKLOAD_FILENAME = "workload/swf/KTH-SP2-1996-2.1-cln.swf.gz";
     //private static final String WORKLOAD_FILENAME = "workload/swf/HPC2N-2002-2.2-cln.swf.gz";     // 202871
     private static final String WORKLOAD_FILENAME = "workload/swf/NASA-iPSC-1993-3.1-cln.swf.gz";  // 18239
@@ -106,7 +106,7 @@ public class EvaluateSingleChromosome {
     int heuristicIndex;
     int schedulingHeuristic;
 
-    List<Double> powerSpecList = Stream.iterate(1.0, n -> n + 1.0).limit(100).collect(Collectors.toList());
+    //List<Double> powerSpecList = Stream.iterate(1.0, n -> n + 1.0).limit(100).collect(Collectors.toList());
     //List<Double> powerSpecList = Stream.iterate(10.0, n -> n + 10.0).limit(10).collect(Collectors.toList());
     List<Double> powerModelSpecPowerHpProLiantMl110G3PentiumD930 = Arrays.asList(105.0, 112.0, 118.0, 125.0, 131.0, 137.0, 147.0, 153.0, 157.0, 164.0, 169.0 );
     List<Double> powerModelSpecPowerHpProLiantMl110G4Xeon3040 = Arrays.asList(86.0, 89.4, 92.6, 96.0, 99.5, 102.0, 106.0, 108.0, 112.0, 114.0, 117.0);
@@ -119,7 +119,7 @@ public class EvaluateSingleChromosome {
 
     ArrayList<List<Cloudlet>> heuristicSpecificFinishedCloudletsList = new ArrayList<List<Cloudlet>>();
 
-    String n = "405342361065511322163621";
+    String n = "144544404040144644133153";
 
     Chromosome solutionCandidate;
 
@@ -157,7 +157,7 @@ public class EvaluateSingleChromosome {
         solutionCandidate.getGeneList().forEach(gene -> System.out.print(gene.getSchedulingHeuristic()));
         schedulingHeuristic = solutionCandidate.getGeneList().get(heuristicIndex).getSchedulingHeuristic();
         System.out.println("\n\nHeuristic Switched to " + schedulingHeuristic);
-        broker0.selectSchedulingPolicy(schedulingHeuristic, vmList);
+        broker0.selectSchedulingPolicy(schedulingHeuristic, vmList,cloudletList);
 
         simulation.start();
 
@@ -185,46 +185,12 @@ public class EvaluateSingleChromosome {
         schedulingHeuristic = solutionCandidate.getGeneList().get((heuristicIndex % 24)).getSchedulingHeuristic();
 
         System.out.println("Heuristic Switched to "+schedulingHeuristic);
-        broker0.selectSchedulingPolicy(schedulingHeuristic, vmList);
-
-        broker0.getCloudletSubmittedList().clear();
-        System.out.println("broker submitted list cleared...");
-        broker0.getCloudletCreatedList().clear();
-        System.out.println("broker created list cleared...");
-
-
-        List <CloudletExecution> all_exec = new ArrayList<>();
-        for (Vm v : vmList
-        ) {
-            List<CloudletExecution> execList = v.getCloudletScheduler().getCloudletExecList();
-            //all_exec.addAll(execList);
-            v.getCloudletScheduler().getCloudletWaitingList().clear();
-            all_exec.addAll(execList);
-
-        }
-
-
-        for (CloudletExecution c: all_exec
-        ) {
-            cloudletList.removeIf(cloudlet -> cloudlet.getId() == c.getCloudletId());
-        }
-
-        //System.out.println("all_exec: "+all_exec);
-        //System.out.println("cloudletList: "+cloudletList);
-
-        //broker0.submitCloudletList();
-        //System.out.println("getCloudletWaitingList().size(): "+broker0.getCloudletWaitingList().size());
+        broker0.selectSchedulingPolicy(schedulingHeuristic, vmList,cloudletList);
 
         broker0.submitCloudletList(cloudletList);
 
-        //System.out.println("Broker submitted list: "+broker0.getCloudletSubmittedList());
-        //System.out.println("Broker waiting list: "+broker0.getCloudletWaitingList());
-        //System.out.println("Broker created list: "+broker0.getCloudletCreatedList());
-
         simulation.resume();
         System.out.println("simulation resumed...");
-
-
 
     }
 
@@ -235,13 +201,29 @@ public class EvaluateSingleChromosome {
             simulation.pause();
             System.out.printf("%n# Simulation paused at %.2f second%n%n", Math.floor(simulation.clock()));
 
-            //postSimulationHeuristicSpecificFinishedCloudlets(broker0);
+            postSimulationHeuristicSpecificFinishedCloudlets(broker0);
 
             System.out.printf("Total Cloudlets processed: "+broker0.getCloudletFinishedList().size()+"%n");
 
             cloudletList.removeAll(broker0.getCloudletFinishedList());
 
-            System.out.printf("Remaining Cloudlets: "+cloudletList.size()+"%n%n");
+            System.out.println("Remaining Cloudlets: "+cloudletList.size());
+
+            List <CloudletExecution> all_exec = new ArrayList<>();
+            for (Vm v : vmList
+            ) {
+                List<CloudletExecution> execList = v.getCloudletScheduler().getCloudletExecList();
+                v.getCloudletScheduler().getCloudletWaitingList().clear();
+                all_exec.addAll(execList);
+            }
+
+            for (CloudletExecution c: all_exec
+            ) {
+                cloudletList.removeIf(cloudlet -> cloudlet.getId() == c.getCloudletId());
+            }
+
+            System.out.println("Ignoring the cloudlets in execution state....");
+            System.out.println("Remaining cloudlets: "+cloudletList.size());
 
         }
     }
@@ -261,7 +243,7 @@ public class EvaluateSingleChromosome {
             peList.add(new PeSimple(HOST_MIPS));
         }
         //PowerModelHost powerModel = new PowerModelHostSimple(50, 35);
-        PowerModelHostSpec powerModel = new PowerModelHostSpec(powerSpecList);
+        PowerModelHostSpec powerModel = new PowerModelHostSpec(powerModelSpecPowerHpProLiantMl110G3PentiumD930);
         Host h = new HostSimple(HOST_RAM, HOST_BW, HOST_STORAGE, peList);
         h.setVmScheduler(new VmSchedulerSpaceShared()).setPowerModel(powerModel);
         h.enableUtilizationStats();
@@ -348,7 +330,7 @@ public class EvaluateSingleChromosome {
     public void printPerformanceMetrics(Datacenter datacenter, DatacenterBroker broker){
 
         double makespan = roundDecimals(broker.getCloudletFinishedList().get(broker.getCloudletFinishedList().size()-1).getFinishTime());
-        double throughput = broker.getCloudletFinishedList().size()/makespan;
+        double throughput = roundDecimals(broker.getCloudletFinishedList().size()/makespan);
 
         System.out.println("finishedCloudlets: "+broker.getCloudletFinishedList().size());
         System.out.println("makespan: "+makespan);
@@ -367,8 +349,8 @@ public class EvaluateSingleChromosome {
             totalHostPowerConsumption += watts;
         }
 
-        System.out.println("totalHostCpuUtilization: "+roundDecimals(totalHostCpuUtilization*100));
-        System.out.println("totalHostCpuUtilizationList: "+totalHostCpuUtilizationList);
+        //System.out.println("totalHostCpuUtilization: "+roundDecimals(totalHostCpuUtilization*100));
+        //System.out.println("totalHostCpuUtilizationList: "+totalHostCpuUtilizationList);
         System.out.println("totalHostPowerConsumption: "+roundDecimals(totalHostPowerConsumption));
 
     }
@@ -402,6 +384,5 @@ public class EvaluateSingleChromosome {
         System.out.printf("Heuristic Cloudlets processed: "+heuristicSpecificFinishedCloudlets.size()+"%n");
 
     }
-
 
 }

@@ -100,7 +100,7 @@ public class InfraGreenHetero2 {
         broker0.submitVmList(vmList);
         broker0.submitCloudletList(cloudletList);
 
-        broker0.Random(vmList);
+        //broker0.Random(vmList);
         //broker0.FirstComeFirstServe(vmList);
         //broker0.LongestJobFirst(vmList);
         //broker0.ShortestJobFirst(vmList);

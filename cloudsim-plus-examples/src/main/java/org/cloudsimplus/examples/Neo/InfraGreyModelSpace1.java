@@ -164,7 +164,7 @@ public class InfraGreyModelSpace1 {
                 System.out.printf("%nSolution Candidate: " + solutionCandidate + "%n%n");
                 schedulingHeuristic = solutionCandidate.get(heuristicIndex);
                 System.out.println("Heuristic Switched to " + schedulingHeuristic);
-                broker0.selectSchedulingPolicy(schedulingHeuristic, vmList);
+                //broker0.selectSchedulingPolicy(schedulingHeuristic, vmList);
 
                 simulation.start();
 
@@ -245,7 +245,7 @@ public class InfraGreyModelSpace1 {
 
         schedulingHeuristic = solutionCandidate.get((heuristicIndex % 24));
         System.out.println("Heuristic Switched to "+schedulingHeuristic);
-        broker0.selectSchedulingPolicy(schedulingHeuristic, vmList);
+        //broker0.selectSchedulingPolicy(schedulingHeuristic, vmList);
 
         broker0.getCloudletSubmittedList().clear();
         System.out.println("broker submitted list cleared...");

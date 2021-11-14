@@ -12,50 +12,34 @@ public class LongestJobFirstPolicy {
 
     MyBroker myBroker;
     List<Vm> vmList;
+    List<Cloudlet> cloudletList;
 
-    LongestJobFirstPolicy (MyBroker myBroker, List<Vm> vmList){
+
+    LongestJobFirstPolicy (MyBroker myBroker, List<Vm> vmList, List<Cloudlet> cloudletList){
 
         this.myBroker = myBroker;
         this.vmList = vmList;
+        this.cloudletList = cloudletList;
+
 
     }
 
     public void schedule() {
 
-        List<Cloudlet> cloudletList;
-
         System.out.println("Scheduling with LJF Policy");
-
-        if (myBroker.getCloudletWaitingList().isEmpty()) {
-            cloudletList  = myBroker.getCloudletCreatedList();
-            cloudletList.removeAll(myBroker.getCloudletFinishedList());
-        } else {
-            cloudletList = myBroker.getCloudletWaitingList();
-            System.out.println("Cloudlets waiting: "+cloudletList.size());
-        }
-
-        System.out.println("Cloudlets remaining: "+cloudletList.size());
 
         final Comparator<Cloudlet> sortBylength = comparingLong(cl -> cl.getLength());
         cloudletList.sort(sortBylength.reversed());
 
         //cloudletList.sort((Cloudlet s1, Cloudlet s2)-> Math.toIntExact(s2.getLength()-s1.getLength()));
 
-
         for(int i=0; i < cloudletList.size(); i++){
-
             Cloudlet cl = cloudletList.get(i);
             Vm vm = vmList.get((i % vmList.size()));
             myBroker.bindCloudletToVm(cl,vm);
-
-
+            //System.out.println(cl.getLength()+" "+vm.getId());
         }
 
-
-
-
-
     }
-
 
 }

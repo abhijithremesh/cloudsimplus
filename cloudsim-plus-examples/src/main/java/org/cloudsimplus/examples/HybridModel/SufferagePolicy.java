@@ -13,11 +13,13 @@ public class SufferagePolicy {
 
     MyBroker myBroker;
     List<Vm> vmList;
+    List<Cloudlet> cloudletList;
 
-    SufferagePolicy (MyBroker myBroker, List<Vm> vmList){
+    SufferagePolicy (MyBroker myBroker, List<Vm> vmList, List<Cloudlet> cloudletList){
 
         this.myBroker = myBroker;
         this.vmList = vmList;
+        this.cloudletList = cloudletList;
 
     }
 
@@ -37,24 +39,6 @@ public class SufferagePolicy {
     public void schedule() {
 
         System.out.println("Scheduling with Sufferage Policy");
-
-        System.out.println("Cloudlets waiting: "+myBroker.getCloudletWaitingList().size());
-
-        myBroker.getCloudletSubmittedList().removeAll(myBroker.getCloudletFinishedList());
-
-        System.out.println("Cloudlets remaining: "+myBroker.getCloudletSubmittedList().size());
-
-        List<Cloudlet> cloudletList = myBroker.getCloudletSubmittedList();
-
-        /*
-        for (Cloudlet c : cloudletList) {
-            if (c.isBoundToVm() == true){
-                //Vm v = c.getVm();
-                //c.setLength((long)(c.getLength()/v.getMips()));
-                c.setVm(Vm.NULL);}
-        }
-
-         */
 
         // Getting the amount of cloudlets and VMs
         int noOfVms = vmList.size();

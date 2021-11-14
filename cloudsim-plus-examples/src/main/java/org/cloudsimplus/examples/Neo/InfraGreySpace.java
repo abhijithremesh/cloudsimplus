@@ -143,10 +143,10 @@ public class InfraGreySpace {
 
         //broker0.FirstComeFirstServe(vmList);
         //broker0.Random(vmList);
-        //broker0.LongestJobFirst(vmList);
+        broker0.LongestJobFirst(vmList,cloudletList);
         //broker0.ShortestJobFirst(vmList);
         //broker0.ShortestCloudletFastestPE(vmList);
-        broker0.LongestCloudletFastestPE(vmList);
+        //broker0.LongestCloudletFastestPE(vmList);
         //broker0.MinimumCompletionTime(vmList);
         //broker0.MinimumExecutionTime(vmList);
         //broker0.MinMin(vmList);

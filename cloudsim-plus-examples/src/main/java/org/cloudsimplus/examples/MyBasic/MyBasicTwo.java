@@ -124,7 +124,7 @@ public class MyBasicTwo {
 
         //broker0.Random(vmList);
         //broker0.RoundRobin(vmList);
-        broker0.FirstComeFirstServe(vmList);
+        //broker0.FirstComeFirstServe(vmList);
         //broker0.FirstComeFirstServeFirstFit(vmList);
         //broker0.ShortestJobFirst(vmList);
         //broker0.ShortestCloudletFastestPE(vmList);

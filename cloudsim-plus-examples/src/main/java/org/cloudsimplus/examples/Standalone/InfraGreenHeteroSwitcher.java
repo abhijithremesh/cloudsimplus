@@ -123,7 +123,7 @@ public class InfraGreenHeteroSwitcher {
             System.out.printf("%nSolution Candidate: "+solutionCandidate+"%n%n");
             schedulingHeuristic = solutionCandidate.get(heuristicIndex);
             System.out.println("Heuristic Switched to "+schedulingHeuristic);
-            broker0.selectSchedulingPolicy(schedulingHeuristic,vmList);
+            //broker0.selectSchedulingPolicy(schedulingHeuristic,vmList);
 
             //broker0.Random(vmList);
             //broker0.FirstComeFirstServe(vmList);
@@ -184,7 +184,7 @@ public class InfraGreenHeteroSwitcher {
 
         schedulingHeuristic = solutionCandidate.get((heuristicIndex % 24));
         System.out.println("Heuristic Switched to "+schedulingHeuristic);
-        broker0.selectSchedulingPolicy(schedulingHeuristic, vmList);
+        //broker0.selectSchedulingPolicy(schedulingHeuristic, vmList);
 
         simulation.resume();
         System.out.println("simulation resumed...");

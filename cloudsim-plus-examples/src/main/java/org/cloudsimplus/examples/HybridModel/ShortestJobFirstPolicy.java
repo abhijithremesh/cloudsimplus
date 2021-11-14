@@ -14,32 +14,20 @@ public class ShortestJobFirstPolicy {
 
     MyBroker myBroker;
     List<Vm> vmList;
+    List<Cloudlet> cloudletList;
 
-    ShortestJobFirstPolicy (MyBroker myBroker, List<Vm> vmList){
+
+    ShortestJobFirstPolicy (MyBroker myBroker, List<Vm> vmList, List<Cloudlet> cloudletList){
 
         this.myBroker = myBroker;
         this.vmList = vmList;
+        this.cloudletList = cloudletList;
 
     }
 
     public void schedule() {
 
-        List<Cloudlet> cloudletList;
-
         System.out.println("Scheduling with SJF Policy");
-
-        if (myBroker.getCloudletWaitingList().isEmpty()) {
-            System.out.println("from broker created list");
-            cloudletList  = myBroker.getCloudletCreatedList();
-            cloudletList.removeAll(myBroker.getCloudletFinishedList());
-        } else {
-            System.out.println("from broker waiting list");
-            cloudletList = myBroker.getCloudletWaitingList();
-            System.out.println("Cloudlets waiting: "+cloudletList.size());
-        }
-
-        System.out.println("Cloudlets remaining: "+cloudletList.size());
-
 
         final Comparator<Cloudlet> sortBylength = comparingLong(cl -> cl.getLength());
         cloudletList.sort(sortBylength);
@@ -47,15 +35,12 @@ public class ShortestJobFirstPolicy {
         //cloudletList.sort((Cloudlet s1, Cloudlet s2)-> Math.toIntExact(s1.getLength()-s2.getLength()));
 
         for(int i=0;i<cloudletList.size();i++){
-
             Cloudlet cl = cloudletList.get(i);
             Vm vm = vmList.get((i % vmList.size()));
             myBroker.bindCloudletToVm(cl,vm);
-
-
+            //System.out.println(cl.getId()+" "+cl.getLength()+" "+vm.getId());
         }
 
-        //System.out.println("Finished SJF Scheduling....");
     }
 
 }

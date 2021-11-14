@@ -11,11 +11,14 @@ public class MaxMinPolicy {
 
     MyBroker myBroker;
     List<Vm> vmList;
+    List<Cloudlet> cloudletList;
 
-    MaxMinPolicy (MyBroker myBroker, List<Vm> vmList){
+    MaxMinPolicy (MyBroker myBroker, List<Vm> vmList, List<Cloudlet> cloudletList){
 
         this.myBroker = myBroker;
         this.vmList = vmList;
+        this.cloudletList = cloudletList;
+
 
     }
 
@@ -38,13 +41,6 @@ public class MaxMinPolicy {
 
         System.out.println("Scheduling with MAX_MIN Policy");
 
-        System.out.println("Cloudlets waiting: "+myBroker.getCloudletWaitingList().size());
-
-        myBroker.getCloudletSubmittedList().removeAll(myBroker.getCloudletFinishedList());
-
-        System.out.println("Cloudlets remaining: "+myBroker.getCloudletSubmittedList().size());
-
-        List<Cloudlet> cloudletList = myBroker.getCloudletSubmittedList();
 
         // Getting the amount of cloudlets and VMs
         int noOfVms = vmList.size();
@@ -114,18 +110,11 @@ public class MaxMinPolicy {
                 completionTime[maxCloudlet][i] = -1.0;
             }
 
-
             cloudletVmMinList.clear();
 
             //System.out.println("*********************************");
 
         }
-
-
-
-
-
-
 
 
     }
@@ -134,7 +123,8 @@ public class MaxMinPolicy {
     private double getCompletionTime(Cloudlet cloudlet, Vm vm){
         double waitingTime = cloudlet.getWaitingTime();
         double execTime = cloudlet.getLength() / (vm.getMips()*vm.getNumberOfPes());
-        double completionTime = execTime + waitingTime;
+        //double completionTime = execTime + waitingTime;
+        double completionTime = execTime;
         return completionTime;
     }
 

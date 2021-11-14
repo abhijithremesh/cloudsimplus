@@ -12,26 +12,19 @@ public class MinMinPolicy {
 
     MyBroker myBroker;
     List<Vm> vmList;
+    List<Cloudlet> cloudletList;
 
-    MinMinPolicy (MyBroker myBroker, List<Vm> vmList){
+    MinMinPolicy (MyBroker myBroker, List<Vm> vmList, List<Cloudlet> cloudletList){
 
         this.myBroker = myBroker;
         this.vmList = vmList;
+        this.cloudletList = cloudletList;
 
     }
 
     public void schedule() {
 
         System.out.println("Scheduling with MIN_MIN Policy");
-
-        System.out.println("Cloudlets waiting: "+myBroker.getCloudletWaitingList().size());
-
-        myBroker.getCloudletSubmittedList().removeAll(myBroker.getCloudletFinishedList());
-
-        System.out.println("Cloudlets remaining: "+myBroker.getCloudletSubmittedList().size());
-
-        List<Cloudlet> cloudletList = myBroker.getCloudletSubmittedList();
-
 
         int noOfVms = vmList.size();
         int noOfCloudlets = cloudletList.size();
@@ -61,9 +54,6 @@ public class MinMinPolicy {
 
             //System.out.println("*********************************");
 
-            //System.out.println("clist: "+clist);
-
-            //System.out.println(Arrays.deepToString(completionTime));
 
             // Getting the minimum completion time from the completion time matrix
             double MinimumCompletionTime = getMinValue(completionTime);
@@ -72,18 +62,17 @@ public class MinMinPolicy {
             // Getting the respective indices (cloudlet,VM) of the minimum completion time value
             int[] Indices = getIndices(completionTime, MinimumCompletionTime);
 
+
             // Getting the cloudlet-VM  with minimum completion time from the completion time matrix
             minCloudlet = Indices[0];
             minVm = Indices[1];
+            //System.out.println(minCloudlet+" "+minVm);
 
             Cloudlet minimumCloudlet = cloudletList.get(minCloudlet);
             Vm minimumVm = vmList.get(minVm);
             //System.out.println("Minimum Cloudlet: " + minimumCloudlet);
             //System.out.println("Minimum VM: " + minimumVm);
 
-            //System.out.println(minimumCloudlet.getLength());
-            //System.out.println(minimumVm.getMips());
-            //minimumCloudlet.setLength(minimumCloudlet.getLength()* (long) minimumVm.getMips());
 
             // Binding the cloudlet to the respective VM
             myBroker.bindCloudletToVm(minimumCloudlet, minimumVm);
@@ -104,11 +93,14 @@ public class MinMinPolicy {
                 completionTime[minCloudlet][i] = -1.0;
             }
 
-            //System.out.println(Arrays.deepToString(completionTime));
 
+            //System.out.println(Arrays.deepToString(completionTime));
 
         }
 
+        //completionTime = null;
+
+        //System.out.println(Arrays.deepToString(completionTime));
 
 
 
@@ -117,7 +109,8 @@ public class MinMinPolicy {
     private double getCompletionTime(Cloudlet cloudlet, Vm vm){
         double waitingTime = cloudlet.getWaitingTime();
         double execTime = cloudlet.getLength() / (vm.getMips() * vm.getNumberOfPes());
-        double completionTime = execTime + waitingTime;
+        //double completionTime = execTime + waitingTime;
+        double completionTime = execTime;
         return completionTime;
     }
 

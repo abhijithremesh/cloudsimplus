@@ -15,11 +15,14 @@ public class FirstComeFirstServePolicy {
 
     MyBroker myBroker;
     List<Vm> vmList;
+    List<Cloudlet> cloudletList;
 
-    FirstComeFirstServePolicy(MyBroker myBroker, List<Vm> vmList) {
+    FirstComeFirstServePolicy(MyBroker myBroker, List<Vm> vmList, List<Cloudlet> cloudletList) {
 
         this.myBroker = myBroker;
         this.vmList = vmList;
+        this.cloudletList = cloudletList;
+
 
     }
 
@@ -27,20 +30,11 @@ public class FirstComeFirstServePolicy {
 
         System.out.println("Scheduling with FCFS Policy");
 
-        System.out.println("Cloudlets waiting: " + myBroker.getCloudletWaitingList().size());
-
-        myBroker.getCloudletSubmittedList().removeAll(myBroker.getCloudletFinishedList());
-
-        System.out.println("Cloudlets remaining: " + myBroker.getCloudletSubmittedList().size());
-
-        List<Cloudlet> cloudletList = myBroker.getCloudletSubmittedList();
-
         final Comparator<Cloudlet> sortById = comparingLong(cl -> cl.getId());
         cloudletList.sort(sortById);
 
-
-        for (int i = 0; i < cloudletList.size(); i++) {
-                Cloudlet cl = cloudletList.get(i);
+        for (int i = 0; i < myBroker.getCloudletSubmittedList().size(); i++) {
+                Cloudlet cl = myBroker.getCloudletSubmittedList().get(i);
                 Vm vm = vmList.get((i % vmList.size()));
                 myBroker.bindCloudletToVm(cl, vm);
                 //System.out.println(cl+" : "+vm);
