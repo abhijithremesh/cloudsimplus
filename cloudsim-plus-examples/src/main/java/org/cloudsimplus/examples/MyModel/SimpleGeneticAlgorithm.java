@@ -10,7 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
-public class GeneticAlgorithmNew {
+public class SimpleGeneticAlgorithm {
 
     List<Chromosome> chromosomeList = new ArrayList<>();
     List<Double> fitnessList = new ArrayList<>();
@@ -367,7 +367,7 @@ public class GeneticAlgorithmNew {
 
     public void computeFitness(Datacenter datacenter, DatacenterBroker broker, List<Chromosome> chromosomeList){
 
-        double a = 1, b= 1;
+        double a = 0.3, b= 0.7;
         double makespan = broker.getCloudletFinishedList().get(broker.getCloudletFinishedList().size()-1).getFinishTime();
         double totalHostPowerConsumption =0;
         for (Host h: datacenter.getHostList()
