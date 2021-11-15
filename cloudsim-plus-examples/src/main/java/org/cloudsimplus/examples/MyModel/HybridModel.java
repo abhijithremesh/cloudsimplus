@@ -91,7 +91,7 @@ public class HybridModel {
     private static final int CLOUDLET_PES = 2;
     private static final int CLOUDLET_LENGTH = 10_000;
 
-    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile =  16000; // Integer.MAX_VALUE
+    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile =  Integer.MAX_VALUE; // Integer.MAX_VALUE
     //private static final String WORKLOAD_FILENAME = "workload/swf/KTH-SP2-1996-2.1-cln.swf.gz";
     //private static final String WORKLOAD_FILENAME = "workload/swf/HPC2N-2002-2.2-cln.swf.gz";     // 202871
     private static final String WORKLOAD_FILENAME = "workload/swf/NASA-iPSC-1993-3.1-cln.swf.gz";  // 18239
@@ -179,8 +179,8 @@ public class HybridModel {
 
                 simulation.start();
 
-                //gnew.computeMakespan(broker0, chromosomeList);
-                gnew.computeFitness(datacenter0,broker0,chromosomeList);
+                gnew.computeMakespan(broker0, chromosomeList);
+                //gnew.computeFitness(datacenter0,broker0,chromosomeList);
 
                 gnew.printPerformanceMetrics(datacenter0,broker0);
 
