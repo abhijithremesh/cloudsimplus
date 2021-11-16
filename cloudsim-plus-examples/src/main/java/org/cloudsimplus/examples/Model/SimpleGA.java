@@ -1,4 +1,4 @@
-package org.cloudsimplus.examples.MyModel;
+package org.cloudsimplus.examples.Model;
 
 import org.cloudbus.cloudsim.brokers.DatacenterBroker;
 import org.cloudbus.cloudsim.datacenters.Datacenter;
@@ -9,98 +9,41 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
 
-public class SimpleGeneticAlgorithm {
+public class SimpleGA {
 
-    List<Chromosome> chromosomeList = new ArrayList<>();
-
-
-    List<Double> makespanList = new ArrayList<>();
-    List<Double> powerConsumptionList = new ArrayList<>();
+    List<SingleChromosome> chromosomeList = new ArrayList<>();
     List<Double> fitnessList = new ArrayList<>();
 
-    List<Chromosome> childChromosomesList = new ArrayList<>();
-    List<Chromosome> nextPopulation = new ArrayList<>();
+    List<SingleChromosome> childChromosomesList = new ArrayList<>();
+    List<SingleChromosome> nextPopulation = new ArrayList<>();
 
     List<Double> generationBestFitnessValueList = new ArrayList<>();
-    List<Chromosome> generationBestChromosomeList = new ArrayList<>();
+    List<SingleChromosome> generationBestChromosomeList = new ArrayList<>();
 
-    public List<Chromosome> createInitialPopulation(int n, int len, int bound){
+    public List<SingleChromosome> createInitialPopulation(int n, int len, int bound){
 
         for (int i=0; i<n; i++){
-            ArrayList<Gene> newChromosome = new ArrayList<Gene>();
+            ArrayList<SingleGene> newChromosome = new ArrayList<SingleGene>();
             for(int j = 0; j< len; j++){
                 Random r = new Random();
-                Gene g = new Gene();
+                SingleGene g = new SingleGene();
                 g.setSchedulingHeuristic(r.nextInt(bound));
                 newChromosome.add(g);
             }
-            Chromosome chromosome = new Chromosome(newChromosome);
+            SingleChromosome chromosome = new SingleChromosome(newChromosome);
             this.chromosomeList.add(chromosome);
         }
         return chromosomeList;
     }
 
-    public void computeMakespan(MyBroker broker){
+    public void computeMakespan(MyBroker broker, List<SingleChromosome> chromosomeList){
 
         double makespan = broker.getCloudletFinishedList().get(broker.getCloudletFinishedList().size() - 1).getFinishTime();
         System.out.println("Makespan: "+roundDecimals(makespan));
-        this.makespanList.add(roundDecimals(makespan));
-        System.out.println("\nmakespanList: "+makespanList);
-
-    }
-
-    public void computePowerConsumption(Datacenter datacenter){
-
-        List<Double> HostCpuUtilizationList = new ArrayList<>();
-        //double totalHostCpuUtilization = 0;
-        double totalHostPowerConsumption = 0;
-        for (Host h: datacenter.getHostList()
-        ) {
-            double utilizationPercentMean = h.getCpuUtilizationStats().getMean();
-            double utilizationPercentCount = h.getCpuUtilizationStats().count();
-            double watts = h.getPowerModel().getPower(utilizationPercentMean);
-            //HostCpuUtilizationList.add(roundDecimals(utilizationPercentMean));
-            //totalHostCpuUtilization += utilizationPercentMean;
-            totalHostPowerConsumption += watts;
-        }
-        this.powerConsumptionList.add(roundDecimals(totalHostPowerConsumption));
-        System.out.println("\npowerConsumptionList: "+powerConsumptionList);
-
-    }
-
-    public void computeFitness(List<Chromosome> chromosomeList, double w1, double w2){
-
+        this.fitnessList.add(roundDecimals(makespan));
         this. chromosomeList = chromosomeList;
 
-        /*
-        // Scaling method 1
-        double maxMakespan = Collections.max(makespanList);
-        double maxPowerConsumption = Collections.max(powerConsumptionList);
-        this.makespanList = this.makespanList.stream().map(f->f/maxMakespan).collect(Collectors.toList());
-        this.powerConsumptionList = this.powerConsumptionList.stream().map(f->f/maxPowerConsumption).collect(Collectors.toList());
-
-
-         */
-
-
-        // Scaling method 2
-        double maxMakespan = Collections.max(makespanList), minMakespan = Collections.min(makespanList);
-        double maxPowerConsumption = Collections.max(powerConsumptionList), minPowerConsumption = Collections.min(powerConsumptionList);
-        this.makespanList = this.makespanList.stream().map(f->(maxMakespan-f)/(maxMakespan-minMakespan)).collect(Collectors.toList());
-        this.powerConsumptionList = this.powerConsumptionList.stream().map(f->(maxPowerConsumption-f)/(maxPowerConsumption-minPowerConsumption)).collect(Collectors.toList());
-
-
-
-        System.out.println("makespanList: "+makespanList);
-        System.out.println("powerConsumptionList: "+powerConsumptionList);
-
-
-        for (int i = 0; i < chromosomeList.size(); i++){
-            double fitness = w1 * makespanList.get(i) + w2 * powerConsumptionList.get(i);
-            this.fitnessList.add(roundDecimals(fitness));
-        }
 
         System.out.println("chromosomeList: ");
         printChromosomes(chromosomeList);
@@ -109,24 +52,11 @@ public class SimpleGeneticAlgorithm {
 
     }
 
-    public List<Double> applyScalingOne(List<Double> fitnessList){
-
-        double maxValue = Collections.max(fitnessList);
-        for (Double f: fitnessList
-             ) {
-            f = f / maxValue;
-        }
-        return fitnessList;
-
-    }
-
-
-
     public void elitismSelection(int eliteCount){
 
         System.out.println("Performing Elitism");
 
-        List<Chromosome> eliteChromosomes = new ArrayList<>();
+        List<SingleChromosome> eliteChromosomes = new ArrayList<>();
 
         for(int i=0; i < eliteCount; i++){
 
@@ -143,7 +73,7 @@ public class SimpleGeneticAlgorithm {
 
     }
 
-    public Chromosome tournamentSelection(int tournamentCount){
+    public SingleChromosome tournamentSelection(int tournamentCount){
 
         System.out.println("Performing Tournament Selection");
 
@@ -157,7 +87,7 @@ public class SimpleGeneticAlgorithm {
         System.out.println(fitnessValues);
 
 
-        Chromosome tourChromosome = chromosomeList.get(chromosomeIndices.get(fitnessValues.indexOf(Collections.min(fitnessValues))));
+        SingleChromosome tourChromosome = chromosomeList.get(chromosomeIndices.get(fitnessValues.indexOf(Collections.min(fitnessValues))));
 
         System.out.print("tournamentChromosome: ");
         printChromosome(tourChromosome);
@@ -170,8 +100,8 @@ public class SimpleGeneticAlgorithm {
 
         for (int i=0; i<chromosomeList.size(); i++){
 
-            Chromosome parentChromosomeOne = tournamentSelection(tournamentCount);
-            Chromosome parentChromosomeTwo = tournamentSelection(tournamentCount);
+            SingleChromosome parentChromosomeOne = tournamentSelection(tournamentCount);
+            SingleChromosome parentChromosomeTwo = tournamentSelection(tournamentCount);
 
             System.out.print("parentChromosomeOne: ");
             printChromosome(parentChromosomeOne);
@@ -179,7 +109,7 @@ public class SimpleGeneticAlgorithm {
             System.out.print("parentChromosomeTwo: ");
             printChromosome(parentChromosomeTwo);
 
-            Chromosome childChromosome = null;
+            SingleChromosome childChromosome = null;
 
             switch (new Random().nextInt(4)){
                 case 0:
@@ -213,39 +143,37 @@ public class SimpleGeneticAlgorithm {
         System.out.print("nextPopulationFirstCandidate: ");
         printChromosome(nextPopulation.get(0));
 
-        this.makespanList.clear();
-        this.powerConsumptionList.clear();
         this.fitnessList.clear();
         this.childChromosomesList.clear();
         this.chromosomeList.clear();
 
     }
 
-    public Chromosome singlePointCrossover(Chromosome parentChromosomeOne, Chromosome parentChromosomeTwo, double crossoverRate){
+    public SingleChromosome singlePointCrossover(SingleChromosome parentChromosomeOne, SingleChromosome parentChromosomeTwo, double crossoverRate){
 
 
         if(new Random().nextDouble() < crossoverRate ){
             int crossoverPoint = new Random().nextInt(parentChromosomeOne.getGeneList().size());
             System.out.println("crossoverPoint: "+crossoverPoint);
-            ArrayList<Gene> newChromosome = new ArrayList<Gene>();
+            ArrayList<SingleGene> newChromosome = new ArrayList<SingleGene>();
             for(int i=0; i < parentChromosomeOne.getGeneList().size(); i++){
                 if (i < crossoverPoint){
-                    Gene g = new Gene();
+                    SingleGene g = new SingleGene();
                     g.setSchedulingHeuristic(parentChromosomeOne.getGeneList().get(i).getSchedulingHeuristic());
                     newChromosome.add(g);
                 }
                 else{
-                    Gene g = new Gene();
+                    SingleGene g = new SingleGene();
                     g.setSchedulingHeuristic(parentChromosomeTwo.getGeneList().get(i).getSchedulingHeuristic());
                     newChromosome.add(g);
                 }
             }
-            Chromosome childChromosome = new Chromosome(newChromosome);
+            SingleChromosome childChromosome = new SingleChromosome(newChromosome);
             System.out.print("childChromosome: ");
             printChromosome(childChromosome);
             return childChromosome;
         } else {
-            Chromosome childChromosome;
+            SingleChromosome childChromosome;
             childChromosome = ((new Random().nextInt(2) == 0) ? parentChromosomeOne : parentChromosomeTwo);
             System.out.print("childChromosome: ");
             printChromosome(childChromosome);
@@ -254,7 +182,7 @@ public class SimpleGeneticAlgorithm {
 
     }
 
-    public Chromosome twoPointCrossover(Chromosome parentChromosomeOne, Chromosome parentChromosomeTwo, double crossoverRate){
+    public SingleChromosome twoPointCrossover(SingleChromosome parentChromosomeOne, SingleChromosome parentChromosomeTwo, double crossoverRate){
 
 
         if(new Random().nextDouble() < crossoverRate ) {
@@ -276,25 +204,25 @@ public class SimpleGeneticAlgorithm {
 
             System.out.println("crossoverPoints: "+crossoverPointOne+", "+crossoverPointTwo);
 
-            ArrayList<Gene> newChromosome = new ArrayList<Gene>();
+            ArrayList<SingleGene> newChromosome = new ArrayList<SingleGene>();
             for (int i = 0; i < parentChromosomeOne.getGeneList().size(); i++) {
                 if (i < crossoverPointOne || i > crossoverPointTwo) {
-                    Gene g = new Gene();
+                    SingleGene g = new SingleGene();
                     g.setSchedulingHeuristic(parentChromosomeOne.getGeneList().get(i).getSchedulingHeuristic());
                     newChromosome.add(g);
                 } else {
-                    Gene g = new Gene();
+                    SingleGene g = new SingleGene();
                     g.setSchedulingHeuristic(parentChromosomeTwo.getGeneList().get(i).getSchedulingHeuristic());
                     newChromosome.add(g);
                 }
             }
 
-            Chromosome childChromosome = new Chromosome(newChromosome);
+            SingleChromosome childChromosome = new SingleChromosome(newChromosome);
             System.out.print("childChromosome: ");
             printChromosome(childChromosome);
             return childChromosome;
         } else {
-            Chromosome childChromosome;
+            SingleChromosome childChromosome;
             childChromosome = ((new Random().nextInt(2) == 0) ? parentChromosomeOne : parentChromosomeTwo);
             System.out.print("childChromosome: ");
             printChromosome(childChromosome);
@@ -303,27 +231,27 @@ public class SimpleGeneticAlgorithm {
 
     }
 
-    public Chromosome randomCrossover(Chromosome parentChromosomeOne, Chromosome parentChromosomeTwo, double crossoverRate){
+    public SingleChromosome randomCrossover(SingleChromosome parentChromosomeOne, SingleChromosome parentChromosomeTwo, double crossoverRate){
 
         if(new Random().nextDouble() < crossoverRate ) {
-            ArrayList<Gene> newChromosome = new ArrayList<Gene>();
+            ArrayList<SingleGene> newChromosome = new ArrayList<SingleGene>();
             for (int i = 0; i < parentChromosomeOne.getGeneList().size(); i++) {
                 if (new Random().nextInt(2) == 0) {
-                    Gene g = new Gene();
+                    SingleGene g = new SingleGene();
                     g.setSchedulingHeuristic(parentChromosomeOne.getGeneList().get(i).getSchedulingHeuristic());
                     newChromosome.add(g);
                 } else {
-                    Gene g = new Gene();
+                    SingleGene g = new SingleGene();
                     g.setSchedulingHeuristic(parentChromosomeTwo.getGeneList().get(i).getSchedulingHeuristic());
                     newChromosome.add(g);
                 }
             }
-            Chromosome childChromosome = new Chromosome(newChromosome);
+            SingleChromosome childChromosome = new SingleChromosome(newChromosome);
             System.out.print("childChromosome: ");
             printChromosome(childChromosome);
             return childChromosome;
         } else {
-            Chromosome childChromosome;
+            SingleChromosome childChromosome;
             childChromosome = ((new Random().nextInt(2) == 0) ? parentChromosomeOne : parentChromosomeTwo);
             System.out.print("childChromosome: ");
             printChromosome(childChromosome);
@@ -332,27 +260,27 @@ public class SimpleGeneticAlgorithm {
 
     }
 
-    public Chromosome uniformCrossover(Chromosome parentChromosomeOne, Chromosome parentChromosomeTwo, double crossoverRate){
+    public SingleChromosome uniformCrossover(SingleChromosome parentChromosomeOne, SingleChromosome parentChromosomeTwo, double crossoverRate){
 
         if(new Random().nextDouble() < crossoverRate ) {
-            ArrayList<Gene> newChromosome = new ArrayList<Gene>();
+            ArrayList<SingleGene> newChromosome = new ArrayList<SingleGene>();
             for (int i = 0; i < parentChromosomeOne.getGeneList().size(); i++) {
                 if (i % 2 == 0) {
-                    Gene g = new Gene();
+                    SingleGene g = new SingleGene();
                     g.setSchedulingHeuristic(parentChromosomeOne.getGeneList().get(i).getSchedulingHeuristic());
                     newChromosome.add(g);
                 } else {
-                    Gene g = new Gene();
+                    SingleGene g = new SingleGene();
                     g.setSchedulingHeuristic(parentChromosomeTwo.getGeneList().get(i).getSchedulingHeuristic());
                     newChromosome.add(g);
                 }
             }
-            Chromosome childChromosome = new Chromosome(newChromosome);
+            SingleChromosome childChromosome = new SingleChromosome(newChromosome);
             System.out.print("childChromosome: ");
             printChromosome(childChromosome);
             return childChromosome;
         } else {
-            Chromosome childChromosome;
+            SingleChromosome childChromosome;
             childChromosome = ((new Random().nextInt(2) == 0) ? parentChromosomeOne : parentChromosomeTwo);
             System.out.print("childChromosome: ");
             printChromosome(childChromosome);
@@ -361,7 +289,7 @@ public class SimpleGeneticAlgorithm {
 
     }
 
-    public Chromosome mutate(Chromosome childChromosome, double mutationRate){
+    public SingleChromosome mutate(SingleChromosome childChromosome, double mutationRate){
 
         System.out.println("Performing mutation");
 
@@ -369,7 +297,7 @@ public class SimpleGeneticAlgorithm {
             int lowerLim = new Random().nextInt(childChromosome.getGeneList().size());
             int upperLim = new Random().nextInt(childChromosome.getGeneList().size());
 
-            Chromosome mutatedChildChromosome = new Chromosome(childChromosome.getGeneList());
+            SingleChromosome mutatedChildChromosome = new SingleChromosome(childChromosome.getGeneList());
 
             if (lowerLim == upperLim) {
                 if (lowerLim == 0) {
@@ -383,8 +311,8 @@ public class SimpleGeneticAlgorithm {
             childChromosome.getGeneList().forEach(gene -> System.out.print(gene.getSchedulingHeuristic()));
             System.out.println();
 
-            Gene g1 = childChromosome.getGeneList().get(lowerLim);
-            Gene g2 = childChromosome.getGeneList().get(upperLim);
+            SingleGene g1 = childChromosome.getGeneList().get(lowerLim);
+            SingleGene g2 = childChromosome.getGeneList().get(upperLim);
             mutatedChildChromosome.getGeneList().set(lowerLim, g2);
             mutatedChildChromosome.getGeneList().set(upperLim, g1);
 
@@ -393,7 +321,7 @@ public class SimpleGeneticAlgorithm {
 
             return mutatedChildChromosome;
         } else {
-            Chromosome mutatedChildChromosome = new Chromosome(childChromosome.getGeneList());
+            SingleChromosome mutatedChildChromosome = new SingleChromosome(childChromosome.getGeneList());
             System.out.print("mutatedChildChromosome: ");
             printChromosome(mutatedChildChromosome);
             return mutatedChildChromosome;
@@ -402,24 +330,24 @@ public class SimpleGeneticAlgorithm {
 
     }
 
-    public void mutateChildChromosomes(List<Chromosome> childChromosomesList, double mutationRate){
+    public void mutateChildChromosomes(List<SingleChromosome> childChromosomesList, double mutationRate){
 
-        for (Chromosome childChromosome : childChromosomesList
-             ) {
+        for (SingleChromosome childChromosome : childChromosomesList
+        ) {
             mutate(childChromosome,mutationRate);
         }
 
     }
 
-    public List<Chromosome> getNextPopulation(){
-        List<Chromosome> nextPop = new ArrayList<>(nextPopulation);
+    public List<SingleChromosome> getNextPopulation(){
+        List<SingleChromosome> nextPop = new ArrayList<>(nextPopulation);
         this.nextPopulation.clear();
         return nextPop;
     }
 
     public void generationBest(){
 
-        List<Chromosome> chromosomeList = this.chromosomeList;
+        List<SingleChromosome> chromosomeList = this.chromosomeList;
         List<Double> fitnessList = this.fitnessList;
 
         generationBestFitnessValueList.add(Collections.min(fitnessList));
@@ -427,7 +355,7 @@ public class SimpleGeneticAlgorithm {
 
         System.out.println("generationBestFitnessValueList: "+generationBestFitnessValueList);
         System.out.print("generationBestChromosomeList: ");
-        for (Chromosome c: generationBestChromosomeList
+        for (SingleChromosome c: generationBestChromosomeList
         ) {
             c.getGeneList().forEach(gene -> System.out.print(gene.getSchedulingHeuristic()));
             System.out.print(" ");
@@ -437,7 +365,28 @@ public class SimpleGeneticAlgorithm {
 
     }
 
+    public void computeFitness(Datacenter datacenter, DatacenterBroker broker, List<SingleChromosome> chromosomeList, double w1, double w2){
 
+
+        double makespan = broker.getCloudletFinishedList().get(broker.getCloudletFinishedList().size()-1).getFinishTime();
+        double totalHostPowerConsumption =0;
+        for (Host h: datacenter.getHostList()
+        ) {
+            double utilizationPercentMean = h.getCpuUtilizationStats().getMean();
+            double watts = h.getPowerModel().getPower(utilizationPercentMean);
+            totalHostPowerConsumption += watts;
+        }
+        double fitness = w1 * makespan + w2 * totalHostPowerConsumption;
+
+        this.fitnessList.add(roundDecimals(fitness));
+        this. chromosomeList = chromosomeList;
+
+        System.out.println("chromosomeList: ");
+        printChromosomes(chromosomeList);
+
+        System.out.println("\nfitnessList: "+fitnessList);
+
+    }
 
     public void printPerformanceMetrics(Datacenter datacenter, DatacenterBroker broker){
 
@@ -471,8 +420,8 @@ public class SimpleGeneticAlgorithm {
         return  Math.round(value * 100.0) / 100.0;
     }
 
-    private void printChromosomes(List<Chromosome> chromosomeList){
-        for (Chromosome c: chromosomeList
+    private void printChromosomes(List<SingleChromosome> chromosomeList){
+        for (SingleChromosome c: chromosomeList
         ) {
             c.getGeneList().forEach(gene -> System.out.print(gene.getSchedulingHeuristic()));
             System.out.print(" ");
@@ -480,7 +429,7 @@ public class SimpleGeneticAlgorithm {
         System.out.println();
     }
 
-    private void printChromosome(Chromosome chromosome){
+    private void printChromosome(SingleChromosome chromosome){
         chromosome.getGeneList().forEach(gene -> System.out.print(gene.getSchedulingHeuristic()));
         System.out.println();
     }

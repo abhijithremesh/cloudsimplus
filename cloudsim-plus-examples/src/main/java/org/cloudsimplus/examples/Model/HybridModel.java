@@ -21,7 +21,7 @@
  *     You should have received a copy of the GNU General Public License
  *     along with CloudSim Plus. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.cloudsimplus.examples.MyModel;
+package org.cloudsimplus.examples.Model;
 
 import ch.qos.logback.classic.Level;
 import org.cloudbus.cloudsim.cloudlets.Cloudlet;
@@ -48,20 +48,10 @@ import org.cloudsimplus.util.Log;
 
 import java.util.*;
 
-/**
- * A minimal but organized, structured and re-usable CloudSim Plus example
- * which shows good coding practices for creating simulation scenarios.
- *
- * <p>It defines a set of constants that enables a developer
- * to change the number of Hosts, VMs and Cloudlets to create
- * and the number of {@link Pe}s for Hosts, VMs and Cloudlets.</p>
- *
- * @author Manoel Campos da Silva Filho
- * @since CloudSim Plus 1.0
- */
 
 
-public class HybridModelGA {
+
+public class HybridModel {
 
     private static final double INTERVAL = 25;
     private static final int  HOSTS = 20;
@@ -102,10 +92,17 @@ public class HybridModelGA {
     int heuristicIndex;
     int schedulingHeuristic;
 
-    int numOfGenerations = 2, popSize = 10, chromosomeLength = 24, numOfHeuristics = 7;
+    /*
+    int numOfGenerations = 15, popSize = 10, chromosomeLength = 24, numOfHeuristics = 7;
     int eliteCount = 2, tournamentCount = 3;
     double crossoverRate = 0.5, mutationRate = 0.4;
     double w1 = 0.3, w2 = 0.7;
+     */
+
+    int numOfGenerations, popSize, chromosomeLength, numOfHeuristics;
+    int eliteCount, tournamentCount;
+    double crossoverRate, mutationRate;
+    double w1, w2;
 
     //List<Double> powerSpecList = Stream.iterate(1.0, n -> n + 1.0).limit(100).collect(Collectors.toList());
     //List<Double> powerSpecList = Stream.iterate(10.0, n -> n + 10.0).limit(10).collect(Collectors.toList());
@@ -117,20 +114,24 @@ public class HybridModelGA {
     //List<Double> powerModelSpecPowerIbmX3550XeonX5670 = Arrays.asList(66.0, 107.0, 120.0, 131.0, 143.0, 156.0, 173.0, 191.0, 211.0, 229.0, 247.0);
     //List<Double> powerModelSpecPowerIbmX3550XeonX5675 = Arrays.asList(58.4, 98.0, 109.0, 118.0, 128.0, 140.0, 153.0, 170.0, 189.0, 205.0, 222.0);
 
-    Chromosome solutionCandidate;
+    SingleChromosome solutionCandidate;
 
     ArrayList<List<Cloudlet>> heuristicSpecificFinishedCloudletsList = new ArrayList<List<Cloudlet>>();
 
+    /*
     public static void main(String[] args) {
-        new HybridModelGA();
+        new HybridModel();
     }
+     */
 
-    private HybridModelGA() {
 
-        Log.setLevel(Level.OFF);
 
-        SimpleGeneticAlgorithm gnew = new SimpleGeneticAlgorithm();
-        List<Chromosome> chromosomeList = gnew.createInitialPopulation(popSize, chromosomeLength, numOfHeuristics);
+    public HybridModel() {
+
+    //Log.setLevel(Level.OFF);
+
+    SimpleGA gnew = new SimpleGA();
+    List<SingleChromosome> chromosomeList = gnew.createInitialPopulation(popSize, chromosomeLength, numOfHeuristics);
 
         for (int generation = 0; generation < numOfGenerations; generation++) {
 
@@ -183,14 +184,9 @@ public class HybridModelGA {
                 simulation.start();
 
                 //gnew.computeMakespan(broker0, chromosomeList);
-
-                //chromosomeList = gnew.chromosomeList;
+                gnew.computeFitness(datacenter0,broker0,chromosomeList, w1, w2);
 
                 gnew.printPerformanceMetrics(datacenter0,broker0);
-
-                gnew.computeMakespan(broker0);
-                gnew.computePowerConsumption(datacenter0);
-
 
                 cloudletList = null;
                 vmList = null;
@@ -198,8 +194,6 @@ public class HybridModelGA {
                 System.out.println("*********************************Chromosome "+i+" of generation "+generation+" ends********************************\n");
 
             }
-
-            gnew.computeFitness(chromosomeList, w1, w2);
 
             gnew.generationBest();
 
