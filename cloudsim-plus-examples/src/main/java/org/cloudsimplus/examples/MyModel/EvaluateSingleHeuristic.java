@@ -96,7 +96,7 @@ public class EvaluateSingleHeuristic {
     private static final int CLOUDLET_PES = 2;
     private static final int CLOUDLET_LENGTH = 10_000;
 
-    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile = Integer.MAX_VALUE ; // Integer.MAX_VALUE
+    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile = 4000 ; // Integer.MAX_VALUE
     //private static final String WORKLOAD_FILENAME = "workload/swf/KTH-SP2-1996-2.1-cln.swf.gz";
     //private static final String WORKLOAD_FILENAME = "workload/swf/HPC2N-2002-2.2-cln.swf.gz";     // 202871
     private static final String WORKLOAD_FILENAME = "workload/swf/NASA-iPSC-1993-3.1-cln.swf.gz";  // 18239
@@ -123,7 +123,7 @@ public class EvaluateSingleHeuristic {
 
     private EvaluateSingleHeuristic() {
 
-        Log.setLevel(Level.WARN);
+        Log.setLevel(Level.OFF);
 
         simulation = new CloudSim();
         datacenter0 = createDatacenter();
@@ -140,6 +140,8 @@ public class EvaluateSingleHeuristic {
         broker0.submitVmList(vmList);
         broker0.submitCloudletList(cloudletList);
 
+        broker0.setVmDestructionDelay(50);
+
         //broker0.FirstComeFirstServe(vmList,cloudletList);
         //broker0.Random(vmList, cloudletList);
         //broker0.ShortestJobFirst(vmList, cloudletList);
@@ -147,8 +149,8 @@ public class EvaluateSingleHeuristic {
         //broker0.ShortestCloudletFastestPE(vmList, cloudletList);
         //broker0.LongestCloudletFastestPE(vmList, cloudletList);
         //broker0.MinMin(vmList, cloudletList);
-        broker0.MaxMin(vmList, cloudletList);
-        //broker0.Sufferage(vmList, cloudletList);
+        //broker0.MaxMin(vmList, cloudletList);
+
 
         simulation.start();
 
@@ -260,6 +262,7 @@ public class EvaluateSingleHeuristic {
         System.out.println("makespan: "+makespan);
         System.out.println("throughput: "+throughput);
 
+        /*
         List<Double> totalHostCpuUtilizationList = new ArrayList<>();
         double totalHostCpuUtilization = 0;
         double totalHostPowerConsumption = 0;
@@ -272,13 +275,47 @@ public class EvaluateSingleHeuristic {
             totalHostCpuUtilization += utilizationPercentMean;
             totalHostPowerConsumption += watts;
         }
-
         //System.out.println("totalHostCpuUtilization: "+roundDecimals(totalHostCpuUtilization*100));
         //System.out.println("totalHostCpuUtilizationList: "+totalHostCpuUtilizationList);
         System.out.println("totalHostPowerConsumption: "+roundDecimals(totalHostPowerConsumption));
+         */
+
+        double degreeOfImbalance = 0.0;
+        List <Double> vmExecTimeList = new ArrayList<Double>();
+        for (Vm v: broker0.getVmCreatedList()
+        ) {
+            vmExecTimeList.add(v.getTotalExecutionTime());
+        }
+        degreeOfImbalance = (Collections.max(vmExecTimeList) - Collections.min(vmExecTimeList))/vmExecTimeList.stream().mapToDouble(d -> d).average().orElse(0.0);
+        System.out.println("degreeOfImbalance: "+roundDecimals(degreeOfImbalance));
+
+        double totalWaitingTime = 0.0;
+        for (Cloudlet c: broker.getCloudletFinishedList()
+        ) {
+            totalWaitingTime += c.getWaitingTime();
+        }
+        System.out.println("totalWaitingTime: "+roundDecimals(totalWaitingTime));
 
 
 
+        double flowTime = 0.0;
+        for (Cloudlet c : broker.getCloudletFinishedList()
+             ) {
+            flowTime += c.getWaitingTime() + c.getActualCpuTime() + c.getSubmissionDelay();
+        }
+        System.out.println("flowTime: "+roundDecimals(flowTime));
+
+
+        /*
+        double totalCpuUtilization = 0;
+        for (Vm v : broker.getVmCreatedList()
+             ) {
+            totalCpuUtilization += v.getCpuUtilizationStats().getMean();
+        }
+        System.out.println("MeanCpuUtilization: "+roundDecimals((totalCpuUtilization/20)*100));
+
+
+         */
     }
 
     private double roundDecimals(double value){

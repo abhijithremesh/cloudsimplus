@@ -1,8 +1,10 @@
 package org.cloudsimplus.examples.MyModel;
 
 import org.cloudbus.cloudsim.brokers.DatacenterBroker;
+import org.cloudbus.cloudsim.cloudlets.Cloudlet;
 import org.cloudbus.cloudsim.datacenters.Datacenter;
 import org.cloudbus.cloudsim.hosts.Host;
+import org.cloudbus.cloudsim.vms.Vm;
 import org.cloudsimplus.examples.HybridModel.MyBroker;
 
 import java.util.ArrayList;
@@ -15,9 +17,10 @@ public class SimpleGeneticAlgorithm {
 
     List<Chromosome> chromosomeList = new ArrayList<>();
 
-
     List<Double> makespanList = new ArrayList<>();
-    List<Double> powerConsumptionList = new ArrayList<>();
+    //List<Double> degreeOfImbalanceList = new ArrayList<>();
+    List<Double> totalWaitingTimeList = new ArrayList<>();
+    List<Double> flowTimeList = new ArrayList<>();
     List<Double> fitnessList = new ArrayList<>();
 
     List<Chromosome> childChromosomesList = new ArrayList<>();
@@ -51,6 +54,42 @@ public class SimpleGeneticAlgorithm {
 
     }
 
+    public void computeFlowTime(MyBroker broker){
+        double flowTime = 0.0;
+        for (Cloudlet c : broker.getCloudletFinishedList()
+        ) {
+            flowTime += c.getWaitingTime() + c.getActualCpuTime() + c.getSubmissionDelay();
+        }
+        this.flowTimeList.add(roundDecimals(flowTime));
+        System.out.println("\nflowTimeList: "+flowTimeList);
+    }
+
+    public void computeTotalWaitingTime(MyBroker broker){
+        double totalWaitingTime = 0.0;
+        for (Cloudlet c: broker.getCloudletFinishedList()
+        ) {
+            totalWaitingTime += c.getWaitingTime();
+        }
+        this.totalWaitingTimeList.add(roundDecimals(totalWaitingTime));
+        System.out.println("\ntotalWaitingTimeList: "+totalWaitingTimeList);
+    }
+
+    /*
+    public void computeDegreeofImbalance(MyBroker broker){
+        double degreeOfImbalance = 0.0;
+        List <Double> vmExecTimeList = new ArrayList<Double>();
+        for (Vm v: broker.getVmCreatedList()
+        ) {
+            vmExecTimeList.add(v.getTotalExecutionTime());
+        }
+        degreeOfImbalance = (Collections.max(vmExecTimeList) - Collections.min(vmExecTimeList))/vmExecTimeList.stream().mapToDouble(d -> d).average().orElse(0.0);
+        this.degreeOfImbalanceList.add(degreeOfImbalance);
+        System.out.println("\ndegreeOfImbalanceList: "+degreeOfImbalanceList);
+    }
+
+     */
+
+    /*
     public void computePowerConsumption(Datacenter datacenter){
 
         List<Double> HostCpuUtilizationList = new ArrayList<>();
@@ -69,37 +108,72 @@ public class SimpleGeneticAlgorithm {
         System.out.println("\npowerConsumptionList: "+powerConsumptionList);
 
     }
+     */
 
-    public void computeFitness(List<Chromosome> chromosomeList, double w1, double w2){
+    public List<Double> scalingMethodOne(List<Double> list){
+
+        double maxValue = Collections.max(list);
+        list = list.stream().map(f->f/maxValue).collect(Collectors.toList());
+        return list;
+
+    }
+
+    public List<Double> scalingMethodTwo(List<Double> list){
+
+        double minValue = Collections.min(list);
+        list = list.stream().map(f->minValue/f).collect(Collectors.toList());
+        return list;
+
+    }
+
+    public List<Double> scalingMethodThree(List<Double> list){
+
+        double maxValue = Collections.max(list), minValue = Collections.min(list);
+        list = list.stream().map(f->(maxValue-f)/(maxValue-minValue)).collect(Collectors.toList());
+        return list;
+
+    }
+
+    public List<Double> scalingMethodFour(List<Double> list){
+
+        list = list.stream().map(f->(1/f)).collect(Collectors.toList());
+        Double sum = list.stream()
+            .reduce(0.0, (a, b) -> a + b);
+        list = list.stream().map(f->f/sum).collect(Collectors.toList());
+        return list;
+
+    }
+
+
+
+    public void computeFitness(List<Chromosome> chromosomeList, double w1, double w2, double w3, double w4){
 
         this. chromosomeList = chromosomeList;
 
-        /*
-        // Scaling method 1
-        double maxMakespan = Collections.max(makespanList);
-        double maxPowerConsumption = Collections.max(powerConsumptionList);
-        this.makespanList = this.makespanList.stream().map(f->f/maxMakespan).collect(Collectors.toList());
-        this.powerConsumptionList = this.powerConsumptionList.stream().map(f->f/maxPowerConsumption).collect(Collectors.toList());
+        this.makespanList = this.makespanList.stream().map(f->(1127.02-f)/(1127.02-18.26)).collect(Collectors.toList());
+        this.flowTimeList = this.flowTimeList.stream().map(f->(1130793.77-f)/(1130793.77-3495.38)).collect(Collectors.toList());
+        this.totalWaitingTimeList = this.totalWaitingTimeList.stream().map(f->(1107153.9-f)/(1107153.9-2471.02)).collect(Collectors.toList());
+        //this.degreeOfImbalanceList = this.degreeOfImbalanceList.stream().map(f->(2.49-f)/(2.49-0.35)).collect(Collectors.toList());
 
+        //this.makespanList = this.makespanList.stream().map(f->(41.27/f)).collect(Collectors.toList());
+        //this.degreeOfImbalanceList = this.degreeOfImbalanceList.stream().map(f->(0.35/f)).collect(Collectors.toList());
 
-         */
+        //this.makespanList = scalingMethodFour(this.makespanList);
+        //this.degreeOfImbalanceList = scalingMethodFour(this.degreeOfImbalanceList);
 
-
-        // Scaling method 2
-        double maxMakespan = Collections.max(makespanList), minMakespan = Collections.min(makespanList);
-        double maxPowerConsumption = Collections.max(powerConsumptionList), minPowerConsumption = Collections.min(powerConsumptionList);
-        this.makespanList = this.makespanList.stream().map(f->(maxMakespan-f)/(maxMakespan-minMakespan)).collect(Collectors.toList());
-        this.powerConsumptionList = this.powerConsumptionList.stream().map(f->(maxPowerConsumption-f)/(maxPowerConsumption-minPowerConsumption)).collect(Collectors.toList());
-
-
-
-        System.out.println("makespanList: "+makespanList);
-        System.out.println("powerConsumptionList: "+powerConsumptionList);
+        System.out.println("makespanList: "+this.makespanList);
+        System.out.println("flowTimeList: "+this.flowTimeList);
+        System.out.println("totalWaitingTimeList: "+this.totalWaitingTimeList);
+        //System.out.println("degreeOfImbalanceList: "+this.degreeOfImbalanceList);
 
 
         for (int i = 0; i < chromosomeList.size(); i++){
-            double fitness = w1 * makespanList.get(i) + w2 * powerConsumptionList.get(i);
-            this.fitnessList.add(roundDecimals(fitness));
+            //double fitness = w1 * makespanList.get(i) + w2 * degreeOfImbalanceList.get(i);
+            //double fitness = w1 * makespanList.get(i) + w2 * flowTimeList.get(i);
+            //double fitness = w1 * makespanList.get(i) + w2 * totalWaitingTimeList.get(i);
+            //double fitness = w1 * makespanList.get(i) + w2 * totalWaitingTimeList.get(i) + w3 *  flowTimeList.get(i) + w4 * degreeOfImbalanceList.get(i);
+            double fitness = w1 * makespanList.get(i) + w2 * totalWaitingTimeList.get(i) + w3 *  flowTimeList.get(i);
+            this.fitnessList.add(fitness);
         }
 
         System.out.println("chromosomeList: ");
@@ -109,16 +183,6 @@ public class SimpleGeneticAlgorithm {
 
     }
 
-    public List<Double> applyScalingOne(List<Double> fitnessList){
-
-        double maxValue = Collections.max(fitnessList);
-        for (Double f: fitnessList
-             ) {
-            f = f / maxValue;
-        }
-        return fitnessList;
-
-    }
 
 
 
@@ -214,8 +278,11 @@ public class SimpleGeneticAlgorithm {
         printChromosome(nextPopulation.get(0));
 
         this.makespanList.clear();
-        this.powerConsumptionList.clear();
+        //this.degreeOfImbalanceList.clear();
+        this.totalWaitingTimeList.clear();
+        this.flowTimeList.clear();
         this.fitnessList.clear();
+
         this.childChromosomesList.clear();
         this.chromosomeList.clear();
 
@@ -436,8 +503,6 @@ public class SimpleGeneticAlgorithm {
 
 
     }
-
-
 
     public void printPerformanceMetrics(Datacenter datacenter, DatacenterBroker broker){
 

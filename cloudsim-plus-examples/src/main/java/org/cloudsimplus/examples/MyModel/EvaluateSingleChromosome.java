@@ -93,7 +93,7 @@ public class EvaluateSingleChromosome {
     private static final int CLOUDLET_LENGTH = 10_000;
 
 
-    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile =  10000; // Integer.MAX_VALUE
+    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile =  7000; //
     //private static final String WORKLOAD_FILENAME = "workload/swf/KTH-SP2-1996-2.1-cln.swf.gz";
     //private static final String WORKLOAD_FILENAME = "workload/swf/HPC2N-2002-2.2-cln.swf.gz";     // 202871
     private static final String WORKLOAD_FILENAME = "workload/swf/NASA-iPSC-1993-3.1-cln.swf.gz";  // 18239
@@ -119,7 +119,7 @@ public class EvaluateSingleChromosome {
 
     ArrayList<List<Cloudlet>> heuristicSpecificFinishedCloudletsList = new ArrayList<List<Cloudlet>>();
 
-    String n = "354655242432502062563606";
+    String n = "252534603030346435223525";
 
     Chromosome solutionCandidate;
 
@@ -129,7 +129,7 @@ public class EvaluateSingleChromosome {
 
     private EvaluateSingleChromosome() {
 
-        Log.setLevel(Level.OFF);
+        Log.setLevel(Level.INFO);
 
         solutionCandidate = convertToChromosome(n);
 
@@ -145,6 +145,8 @@ public class EvaluateSingleChromosome {
 
         //cloudletList = createCloudlets();
         cloudletList = createCloudletsFromWorkloadFile();
+
+        //broker0.setVmDestructionDelay(50);
 
         considerSubmissionTimes(0);
 
@@ -337,6 +339,7 @@ public class EvaluateSingleChromosome {
         System.out.println("makespan: "+makespan);
         System.out.println("throughput: "+throughput);
 
+        /*
         List<Double> totalHostCpuUtilizationList = new ArrayList<>();
         double totalHostCpuUtilization = 0;
         double totalHostPowerConsumption = 0;
@@ -349,10 +352,40 @@ public class EvaluateSingleChromosome {
             totalHostCpuUtilization += utilizationPercentMean;
             totalHostPowerConsumption += watts;
         }
-
         //System.out.println("totalHostCpuUtilization: "+roundDecimals(totalHostCpuUtilization*100));
         //System.out.println("totalHostCpuUtilizationList: "+totalHostCpuUtilizationList);
         System.out.println("totalHostPowerConsumption: "+roundDecimals(totalHostPowerConsumption));
+         */
+
+        double flowTime = 0.0;
+        for (Cloudlet c : broker.getCloudletFinishedList()
+        ) {
+            flowTime += c.getWaitingTime() + c.getActualCpuTime() + c.getSubmissionDelay();
+        }
+        System.out.println("flowTime: "+roundDecimals(flowTime));
+
+        double totalWaitingTime = 0.0;
+        for (Cloudlet c: broker.getCloudletFinishedList()
+        ) {
+            totalWaitingTime += c.getWaitingTime();
+        }
+        System.out.println("totalWaitingTime: "+roundDecimals(totalWaitingTime));
+
+        double degreeOfImbalance = 0.0;
+        List <Double> vmExecTimeList = new ArrayList<Double>();
+        for (Vm v: broker0.getVmCreatedList()
+        ) {
+            vmExecTimeList.add(v.getTotalExecutionTime());
+        }
+        degreeOfImbalance = (Collections.max(vmExecTimeList) - Collections.min(vmExecTimeList))/vmExecTimeList.stream().mapToDouble(d -> d).average().orElse(0.0);
+        System.out.println("degreeOfImbalance: "+roundDecimals(degreeOfImbalance));
+
+        double totalCpuUtilization = 0;
+        for (Vm v : broker.getVmCreatedList()
+        ) {
+            totalCpuUtilization += v.getCpuUtilizationStats().getMean();
+        }
+        System.out.println("MeanCpuUtilization: "+roundDecimals((totalCpuUtilization/20)*100));
 
     }
 

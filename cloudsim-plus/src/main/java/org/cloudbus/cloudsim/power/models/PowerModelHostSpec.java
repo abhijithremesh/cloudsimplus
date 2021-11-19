@@ -70,7 +70,7 @@ public class PowerModelHostSpec extends PowerModelHost {
 
     @Override
     public double getPower(final double utilizationFraction) throws IllegalArgumentException {
-        int utilizationIndex = (int) Math.round(utilizationFraction * powerSpec.size());
+        int utilizationIndex = (int) Math.round(utilizationFraction * (powerSpec.size()));
         return powerSpec.get(utilizationIndex);
     }
 }

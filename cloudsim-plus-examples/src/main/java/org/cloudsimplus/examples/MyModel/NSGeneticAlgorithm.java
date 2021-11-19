@@ -3,6 +3,7 @@ package org.cloudsimplus.examples.MyModel;
 import org.cloudbus.cloudsim.brokers.DatacenterBroker;
 import org.cloudbus.cloudsim.datacenters.Datacenter;
 import org.cloudbus.cloudsim.hosts.Host;
+import org.cloudsimplus.examples.HybridModel.MyBroker;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -11,14 +12,13 @@ import java.util.Random;
 
 public class NSGeneticAlgorithm {
 
-    List<Chromosome> chromosomeList = new ArrayList<>();
-    List<Double> fitnessOneList = new ArrayList<>();
-    List<Double> fitnessTwoList = new ArrayList<>();
 
-    List<Chromosome> childChromosomesList = new ArrayList<>();
-
+    List<Double> makespanList = new ArrayList<>();
+    List<Double> powerConsumptionList = new ArrayList<>();
 
     public List<Chromosome> createInitialPopulation(int n, int len, int bound){
+
+        List<Chromosome> chromosomeList = new ArrayList<>(n);
 
         for (int i=0; i<n; i++){
             ArrayList<Gene> newChromosome = new ArrayList<Gene>();
@@ -29,7 +29,7 @@ public class NSGeneticAlgorithm {
                 newChromosome.add(g);
             }
             Chromosome chromosome = new Chromosome(newChromosome);
-            this.chromosomeList.add(chromosome);
+            chromosomeList.add(chromosome);
         }
         return chromosomeList;
     }
@@ -80,34 +80,32 @@ public class NSGeneticAlgorithm {
         System.out.println();
     }
 
-    public void computeFitness(Datacenter datacenter, DatacenterBroker broker, List<Chromosome> chromosomeList){
-
-
+    public void computeMakespan(MyBroker broker){
         double makespan = broker.getCloudletFinishedList().get(broker.getCloudletFinishedList().size()-1).getFinishTime();
-        double totalHostPowerConsumption =0;
-        for (Host h: datacenter.getHostList()
-        ) {
+        System.out.println("Makespan: "+roundDecimals(makespan));
+        this.makespanList.add(roundDecimals(makespan));
+        System.out.println("\nmakespanList: "+makespanList);
+    }
+
+    public void computePowerConsumption(Datacenter datacenter){
+
+        double totalHostPowerConsumption = 0;
+        for (Host h :datacenter.getHostList()
+             ) {
             double utilizationPercentMean = h.getCpuUtilizationStats().getMean();
             double watts = h.getPowerModel().getPower(utilizationPercentMean);
             totalHostPowerConsumption += watts;
         }
-
-
-        this.fitnessOneList.add(roundDecimals(makespan));
-        this.fitnessTwoList.add(roundDecimals(makespan));
-
-        //this.chromosomeList = chromosomeList;
-        this.chromosomeList.addAll(chromosomeList);
-
-        System.out.println("chromosomeList: ");
-        printChromosomes(chromosomeList);
-
+        this.powerConsumptionList.add(roundDecimals(totalHostPowerConsumption));
+        System.out.println("\npowerConsumptionList: "+powerConsumptionList);
 
     }
 
-    public List<Chromosome> createChildChromosomes(){
+    public List<Chromosome> createChildChromosomes(List<Chromosome> chromosomeList){
 
-        System.out.println(chromosomeList.size());
+        printChromosomes(chromosomeList);
+
+        List<Chromosome> childChromosomesList = new ArrayList<>(chromosomeList.size());
 
         for (int i=0; i<chromosomeList.size(); i++){
 
@@ -141,14 +139,30 @@ public class NSGeneticAlgorithm {
                     break;
             }
 
-            this.childChromosomesList.add(childChromosome);
+            childChromosomesList.add(childChromosome);
 
         }
 
         System.out.println(childChromosomesList.size());
 
-        this.childChromosomesList = mutateChildChromosomes(childChromosomesList, 0.4);
-        return this.childChromosomesList;
+        childChromosomesList = mutateChildChromosomes(childChromosomesList, 0.4);
+
+        printChromosomes(childChromosomesList);
+
+        return childChromosomesList;
+
+    }
+
+    public List<Chromosome> combineChromosomes(List<Chromosome> parents, List<Chromosome> children){
+
+        List<Chromosome> allChromosomes = new ArrayList<>(parents.size()+children.size());
+
+        allChromosomes.addAll(parents);
+        allChromosomes.addAll(children);
+
+        printChromosomes(allChromosomes);
+
+        return allChromosomes;
 
     }
 
@@ -341,6 +355,22 @@ public class NSGeneticAlgorithm {
         }
 
         return childChromosomesList;
+
+    }
+
+    public void nonDominatedSorting(List<Chromosome> chromosomes, List<Double> fitnessOne, List<Double> fitnessTwo){
+
+        List<Integer> front = new ArrayList<>();
+        for(int i = 0; i< chromosomes.size();i++){
+           for (int j = i +1; j < chromosomes.size(); j++){
+               if (((fitnessOne.get(i)<= fitnessOne.get(j)) && fitnessTwo.get(i)<= fitnessTwo.get(j)) && ((fitnessOne.get(i)< fitnessOne.get(j)) || fitnessTwo.get(i) < fitnessTwo.get(j)) ){
+                   front.add(i);
+               }
+           }
+        }
+
+
+        System.out.println(front);
 
     }
 

@@ -124,6 +124,8 @@ public class DatacenterBrokerSimple extends DatacenterBrokerAbstract {
             return cloudlet.getVm();
         }
 
+
+
         if (getVmExecList().isEmpty()) {
             return Vm.NULL;
         }

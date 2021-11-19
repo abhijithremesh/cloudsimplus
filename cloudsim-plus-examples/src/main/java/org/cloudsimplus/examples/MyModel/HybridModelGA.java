@@ -89,7 +89,7 @@ public class HybridModelGA {
     private static final int CLOUDLET_PES = 2;
     private static final int CLOUDLET_LENGTH = 10_000;
 
-    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile =  1000; // Integer.MAX_VALUE
+    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile =  7000; // Integer.MAX_VALUE
     //private static final String WORKLOAD_FILENAME = "workload/swf/KTH-SP2-1996-2.1-cln.swf.gz";
     //private static final String WORKLOAD_FILENAME = "workload/swf/HPC2N-2002-2.2-cln.swf.gz";     // 202871
     private static final String WORKLOAD_FILENAME = "workload/swf/NASA-iPSC-1993-3.1-cln.swf.gz";  // 18239
@@ -102,10 +102,10 @@ public class HybridModelGA {
     int heuristicIndex;
     int schedulingHeuristic;
 
-    int numOfGenerations = 2, popSize = 10, chromosomeLength = 24, numOfHeuristics = 7;
+    int numOfGenerations = 15, popSize = 10, chromosomeLength = 24, numOfHeuristics = 7;
     int eliteCount = 2, tournamentCount = 3;
     double crossoverRate = 0.5, mutationRate = 0.4;
-    double w1 = 0.3, w2 = 0.7;
+    double w1 = 0.80, w2 = 0.20, w3 = 0.20, w4 = 0;
 
     //List<Double> powerSpecList = Stream.iterate(1.0, n -> n + 1.0).limit(100).collect(Collectors.toList());
     //List<Double> powerSpecList = Stream.iterate(10.0, n -> n + 10.0).limit(10).collect(Collectors.toList());
@@ -154,6 +154,8 @@ public class HybridModelGA {
                 //cloudletList = createCloudlets();
                 cloudletList = createCloudletsFromWorkloadFile();
 
+                //broker0.setVmDestructionDelay(50);
+
                 considerSubmissionTimes(0);
 
                 simulation.addOnClockTickListener(this::pauseSimulation);
@@ -189,17 +191,24 @@ public class HybridModelGA {
                 gnew.printPerformanceMetrics(datacenter0,broker0);
 
                 gnew.computeMakespan(broker0);
-                gnew.computePowerConsumption(datacenter0);
+                gnew.computeTotalWaitingTime(broker0);
+                gnew.computeFlowTime(broker0);
+                //gnew.computeDegreeofImbalance(broker0);
 
 
                 cloudletList = null;
                 vmList = null;
+                broker0 = null;
+                datacenter0.getHostList().forEach(h->h=null);
+                datacenter0 = null;
+                simulation = null;
+
 
                 System.out.println("*********************************Chromosome "+i+" of generation "+generation+" ends********************************\n");
 
             }
 
-            gnew.computeFitness(chromosomeList, w1, w2);
+            gnew.computeFitness(chromosomeList, w1, w2,w3,w4);
 
             gnew.generationBest();
 

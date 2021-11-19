@@ -89,7 +89,7 @@ public class HybridModelNSGA {
     private static final int CLOUDLET_PES = 2;
     private static final int CLOUDLET_LENGTH = 10_000;
 
-    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile =  4000; // Integer.MAX_VALUE
+    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile =  1000; // Integer.MAX_VALUE
     //private static final String WORKLOAD_FILENAME = "workload/swf/KTH-SP2-1996-2.1-cln.swf.gz";
     //private static final String WORKLOAD_FILENAME = "workload/swf/HPC2N-2002-2.2-cln.swf.gz";     // 202871
     private static final String WORKLOAD_FILENAME = "workload/swf/NASA-iPSC-1993-3.1-cln.swf.gz";  // 18239
@@ -127,6 +127,7 @@ public class HybridModelNSGA {
         NSGeneticAlgorithm gnew = new NSGeneticAlgorithm();
         List<Chromosome> chromosomeList = gnew.createInitialPopulation(5, 24, 7);
         List<Chromosome> childChromosomes;
+        List<Chromosome> allChromosomes;
 
         for (int generation = 0; generation < 1; generation++) {
 
@@ -159,43 +160,100 @@ public class HybridModelNSGA {
                 broker0.submitCloudletList(cloudletList);
 
                 solutionCandidate  = chromosomeList.get(i);
-                solutionCandidate.getGeneList().forEach(gene -> System.out.print(gene.getSchedulingHeuristic()+" "));
+                solutionCandidate.getGeneList().forEach(gene -> System.out.print(gene.getSchedulingHeuristic()));
                 schedulingHeuristic = solutionCandidate.getGeneList().get(heuristicIndex).getSchedulingHeuristic();
                 System.out.println("\n\nHeuristic Switched to " + schedulingHeuristic);
                 broker0.selectSchedulingPolicy(schedulingHeuristic, vmList,cloudletList);
 
-                //broker0.Random(vmList);
-                //broker0.FirstComeFirstServe(vmList);
-                //broker0.LongestJobFirst(vmList);
-                //broker0.ShortestJobFirst(vmList);
-                //broker0.ShortestCloudletFastestPE(vmList);
-                //broker0.LongestCloudletFastestPE(vmList);
-                //broker0.MinimumCompletionTime(vmList);
-                //broker0.MinimumExecutionTime(vmList);
-                //broker0.MinMin(vmList);
-                //broker0.MaxMin(vmList);
-                //broker0.Sufferage(vmList);
 
                 simulation.start();
 
-                //gnew.computeMakespan(broker0, chromosomeList);
-                gnew.computeFitness(datacenter0,broker0,chromosomeList);
-
                 gnew.printPerformanceMetrics(datacenter0,broker0);
+
+                gnew.computeMakespan(broker0);
+                gnew.computePowerConsumption(datacenter0);
 
                 cloudletList = null;
                 vmList = null;
+                datacenter0.getHostList().forEach(h->h=null);
+                datacenter0 = null;
+                broker0 = null;
+                simulation = null;
 
                 System.out.println("*********************************Chromosome "+i+" of generation "+generation+" ends********************************\n");
 
             }
 
-            childChromosomes = gnew.createChildChromosomes();
+            System.out.println(gnew.makespanList);
+            System.out.println(gnew.powerConsumptionList);
 
-            System.out.println("childChromosomes: "+childChromosomes.size());
+            childChromosomes = gnew.createChildChromosomes(chromosomeList);
+
+            for (int i = 0; i < childChromosomes.size(); i++) {
+
+                System.out.println("*********************Chromosome "+i+" of generation "+generation+" starts***************************************\n");
+
+                heuristicIndex = 0;
+
+                simulation = new CloudSim();
+
+                datacenter0 = createDatacenter();
+                //datacenter0.setSchedulingInterval(10);
+
+                broker0 = new MyBroker(simulation);
+
+                vmList = createVmsSpaceShared();
+
+                //cloudletList = createCloudlets();
+                cloudletList = createCloudletsFromWorkloadFile();
+
+                considerSubmissionTimes(0);
+
+                simulation.addOnClockTickListener(this::pauseSimulation);
+                simulation.addOnSimulationPauseListener(this::switchSchedulingHeuristics);
+
+                broker0.submitVmList(vmList);
+                broker0.submitCloudletList(cloudletList);
+
+                solutionCandidate  = childChromosomes.get(i);
+                solutionCandidate.getGeneList().forEach(gene -> System.out.print(gene.getSchedulingHeuristic()));
+                schedulingHeuristic = solutionCandidate.getGeneList().get(heuristicIndex).getSchedulingHeuristic();
+                System.out.println("\n\nHeuristic Switched to " + schedulingHeuristic);
+                broker0.selectSchedulingPolicy(schedulingHeuristic, vmList,cloudletList);
+
+
+                simulation.start();
+
+                gnew.printPerformanceMetrics(datacenter0,broker0);
+
+                gnew.computeMakespan(broker0);
+                gnew.computePowerConsumption(datacenter0);
+
+                cloudletList = null;
+                vmList = null;
+                datacenter0.getHostList().forEach(h->h=null);
+                datacenter0 = null;
+                broker0 = null;
+                simulation = null;
+
+                System.out.println("*********************************Chromosome "+i+" of generation "+generation+" ends********************************\n");
+
+            }
+
+            System.out.println(gnew.makespanList);
+            System.out.println(gnew.powerConsumptionList);
+
+            allChromosomes = gnew.combineChromosomes(chromosomeList,childChromosomes);
+
+            gnew.nonDominatedSorting(allChromosomes,gnew.makespanList, gnew.powerConsumptionList);
+
 
 
         }
+
+
+
+
 
     }
 
