@@ -24,5 +24,18 @@ public class ExperimentVariables {
         this.w3 = w3;
     }
 
+    public void printExperimentVariables(){
+        System.out.println("numOfGenerations: "+numOfGenerations);
+        System.out.println("popSize: "+popSize);
+        System.out.println("chromosomeLength: "+chromosomeLength);
+        System.out.println("numOfHeuristics: "+numOfHeuristics);
+        System.out.println("eliteCount: "+eliteCount);
+        System.out.println("tournamentCount: "+tournamentCount);
+        System.out.println("mutationRate: "+mutationRate);
+        System.out.println("w1: "+w1);
+        System.out.println("w2: "+w2);
+        System.out.println("w3: "+w3);
+    }
+
 
 }

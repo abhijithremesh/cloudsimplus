@@ -113,20 +113,25 @@ public class HybridModelGA {
     private HybridModelGA() {
 
         exVariables.add(new ExperimentVariables(20,10,24,7,2,3,0.5,0.4, 0.33,0.33, 0.33));
+        exVariables.add(new ExperimentVariables(20,10,24,7,2,3,0.5,0.4, 0.60,0.20, 0.20));
+        exVariables.add(new ExperimentVariables(20,10,24,7,2,3,0.5,0.4, 0.80,0.10, 0.10));
+        exVariables.add(new ExperimentVariables(20,10,24,7,2,3,0.5,0.4, 0.90,0.05, 0.05));
 
         for (ExperimentVariables ev: exVariables
              ) {
 
+            ev.printExperimentVariables();
+
             Log.setLevel(Level.OFF);
 
-            for (int ws = 0; ws < 2; ws++) {
+            for (int ws = 0; ws < 7; ws++) {
 
                 System.out.println("******************************************** WorkloadNum: "+ws+" ******************************************************");
 
-                List<Integer> workloadSizes = Arrays.asList(4000, 4000, 4000, 4000, 4000, 4000, 4000);
+                List<Integer> workloadSizes = Arrays.asList(1000, 4000, 7000, 10000, 13000, 16000, 18000);
                 int workloadSize = workloadSizes.get(ws);
 
-                for (int opt = 0; opt < 1; opt++) {
+                for (int opt = 0; opt < 10; opt++) {
 
                     System.out.println("******************************************** Optimization: "+opt+" ******************************************************");
 
