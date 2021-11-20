@@ -1,10 +1,8 @@
-package org.cloudsimplus.examples.MyModel;
+package org.cloudsimplus.examples.SimulationModel;
 
 import org.cloudbus.cloudsim.brokers.DatacenterBroker;
 import org.cloudbus.cloudsim.cloudlets.Cloudlet;
 import org.cloudbus.cloudsim.datacenters.Datacenter;
-import org.cloudbus.cloudsim.hosts.Host;
-import org.cloudbus.cloudsim.vms.Vm;
 import org.cloudsimplus.examples.HybridModel.MyBroker;
 
 import java.util.ArrayList;
@@ -13,7 +11,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-public class SimpleGeneticAlgorithm {
+public class GA {
 
     List<Chromosome> chromosomeList = new ArrayList<>();
 
@@ -89,75 +87,18 @@ public class SimpleGeneticAlgorithm {
 
      */
 
-    /*
-    public void computePowerConsumption(Datacenter datacenter){
-
-        List<Double> HostCpuUtilizationList = new ArrayList<>();
-        //double totalHostCpuUtilization = 0;
-        double totalHostPowerConsumption = 0;
-        for (Host h: datacenter.getHostList()
-        ) {
-            double utilizationPercentMean = h.getCpuUtilizationStats().getMean();
-            double utilizationPercentCount = h.getCpuUtilizationStats().count();
-            double watts = h.getPowerModel().getPower(utilizationPercentMean);
-            //HostCpuUtilizationList.add(roundDecimals(utilizationPercentMean));
-            //totalHostCpuUtilization += utilizationPercentMean;
-            totalHostPowerConsumption += watts;
-        }
-        this.powerConsumptionList.add(roundDecimals(totalHostPowerConsumption));
-        System.out.println("\npowerConsumptionList: "+powerConsumptionList);
-
-    }
-     */
-
-    public List<Double> scalingMethodOne(List<Double> list){
-
-        double maxValue = Collections.max(list);
-        list = list.stream().map(f->f/maxValue).collect(Collectors.toList());
-        return list;
-
-    }
-
-    public List<Double> scalingMethodTwo(List<Double> list){
-
-        double minValue = Collections.min(list);
-        list = list.stream().map(f->minValue/f).collect(Collectors.toList());
-        return list;
-
-    }
-
-    public List<Double> scalingMethodThree(List<Double> list){
-
-        double maxValue = Collections.max(list), minValue = Collections.min(list);
-        list = list.stream().map(f->(maxValue-f)/(maxValue-minValue)).collect(Collectors.toList());
-        return list;
-
-    }
-
-    public List<Double> scalingMethodFour(List<Double> list){
-
-        list = list.stream().map(f->(1/f)).collect(Collectors.toList());
-        Double sum = list.stream()
-            .reduce(0.0, (a, b) -> a + b);
-        list = list.stream().map(f->f/sum).collect(Collectors.toList());
-        return list;
-
-    }
 
 
-
-    public void computeFitness(List<Chromosome> chromosomeList, double w1, double w2, double w3, double w4){
+    public void computeFitness(List<Chromosome> chromosomeList, double w1, double w2, double w3){
 
         this. chromosomeList = chromosomeList;
 
-        this.makespanList = this.makespanList.stream().map(f->(1127.02-f)/(1127.02-18.26)).collect(Collectors.toList());
-        this.flowTimeList = this.flowTimeList.stream().map(f->(1130793.77-f)/(1130793.77-3495.38)).collect(Collectors.toList());
-        this.totalWaitingTimeList = this.totalWaitingTimeList.stream().map(f->(1107153.9-f)/(1107153.9-2471.02)).collect(Collectors.toList());
+        this.makespanList = this.makespanList.stream().map(f->((1127.02-f)/(1127.02-18.26)*100)).collect(Collectors.toList());
+        this.flowTimeList = this.flowTimeList.stream().map(f->((1130793.77-f)/(1130793.77-3495.38)*100)).collect(Collectors.toList());
+        this.totalWaitingTimeList = this.totalWaitingTimeList.stream().map(f->((1107153.9-f)/(1107153.9-2471.02)*100)).collect(Collectors.toList());
         //this.degreeOfImbalanceList = this.degreeOfImbalanceList.stream().map(f->(2.49-f)/(2.49-0.35)).collect(Collectors.toList());
-
         //this.makespanList = this.makespanList.stream().map(f->(41.27/f)).collect(Collectors.toList());
         //this.degreeOfImbalanceList = this.degreeOfImbalanceList.stream().map(f->(0.35/f)).collect(Collectors.toList());
-
         //this.makespanList = scalingMethodFour(this.makespanList);
         //this.degreeOfImbalanceList = scalingMethodFour(this.degreeOfImbalanceList);
 
@@ -166,25 +107,32 @@ public class SimpleGeneticAlgorithm {
         System.out.println("totalWaitingTimeList: "+this.totalWaitingTimeList);
         //System.out.println("degreeOfImbalanceList: "+this.degreeOfImbalanceList);
 
-
         for (int i = 0; i < chromosomeList.size(); i++){
             //double fitness = w1 * makespanList.get(i) + w2 * degreeOfImbalanceList.get(i);
             //double fitness = w1 * makespanList.get(i) + w2 * flowTimeList.get(i);
             //double fitness = w1 * makespanList.get(i) + w2 * totalWaitingTimeList.get(i);
-            //double fitness = w1 * makespanList.get(i) + w2 * totalWaitingTimeList.get(i) + w3 *  flowTimeList.get(i) + w4 * degreeOfImbalanceList.get(i);
             double fitness = w1 * makespanList.get(i) + w2 * totalWaitingTimeList.get(i) + w3 *  flowTimeList.get(i);
             this.fitnessList.add(fitness);
         }
 
         System.out.println("chromosomeList: ");
         printChromosomes(chromosomeList);
-
         System.out.println("\nfitnessList: "+fitnessList);
 
     }
 
 
-
+//    public void computeFitness(List<Chromosome> chromosomeList){
+//        this. chromosomeList = chromosomeList;
+//        for (int i = 0; i < chromosomeList.size(); i++){
+//            this.fitnessList.add(makespanList.get(i));
+//            //this.fitnessList.add(totalWaitingTimeList.get(i));
+//            //this.fitnessList.add(flowTimeList.get(i));
+//        }
+//        System.out.println("chromosomeList: ");
+//        printChromosomes(chromosomeList);
+//        System.out.println("\nfitnessList: "+fitnessList);
+//    }
 
     public void elitismSelection(int eliteCount){
 
@@ -513,22 +461,6 @@ public class SimpleGeneticAlgorithm {
         System.out.println("makespan: "+makespan);
         System.out.println("throughput: "+throughput);
 
-        List<Double> HostCpuUtilizationList = new ArrayList<>();
-        double totalHostCpuUtilization = 0;
-        double totalHostPowerConsumption = 0;
-        for (Host h: datacenter.getHostList()
-        ) {
-            double utilizationPercentMean = h.getCpuUtilizationStats().getMean();
-            double utilizationPercentCount = h.getCpuUtilizationStats().count();
-            double watts = h.getPowerModel().getPower(utilizationPercentMean);
-            HostCpuUtilizationList.add(roundDecimals(utilizationPercentMean));
-            totalHostCpuUtilization += utilizationPercentMean;
-            totalHostPowerConsumption += watts;
-        }
-
-        //System.out.println("totalHostCpuUtilization: "+roundDecimals(totalHostCpuUtilization*100));
-        //System.out.println("HostCpuUtilizationList: "+HostCpuUtilizationList);
-        System.out.println("totalHostPowerConsumption: "+roundDecimals(totalHostPowerConsumption));
 
     }
 
@@ -548,6 +480,40 @@ public class SimpleGeneticAlgorithm {
     private void printChromosome(Chromosome chromosome){
         chromosome.getGeneList().forEach(gene -> System.out.print(gene.getSchedulingHeuristic()));
         System.out.println();
+    }
+
+    public List<Double> scalingMethodOne(List<Double> list){
+
+        double maxValue = Collections.max(list);
+        list = list.stream().map(f->f/maxValue).collect(Collectors.toList());
+        return list;
+
+    }
+
+    public List<Double> scalingMethodTwo(List<Double> list){
+
+        double minValue = Collections.min(list);
+        list = list.stream().map(f->minValue/f).collect(Collectors.toList());
+        return list;
+
+    }
+
+    public List<Double> scalingMethodThree(List<Double> list){
+
+        double maxValue = Collections.max(list), minValue = Collections.min(list);
+        list = list.stream().map(f->(maxValue-f)/(maxValue-minValue)).collect(Collectors.toList());
+        return list;
+
+    }
+
+    public List<Double> scalingMethodFour(List<Double> list){
+
+        list = list.stream().map(f->(1/f)).collect(Collectors.toList());
+        Double sum = list.stream()
+            .reduce(0.0, (a, b) -> a + b);
+        list = list.stream().map(f->f/sum).collect(Collectors.toList());
+        return list;
+
     }
 
 }

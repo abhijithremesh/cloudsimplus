@@ -1,4 +1,4 @@
-package org.cloudsimplus.examples.MyModel;
+package org.cloudsimplus.examples.SimulationModel;
 
 public class Gene {
 

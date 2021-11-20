@@ -1,4 +1,4 @@
-package org.cloudsimplus.examples.MyModel;
+package org.cloudsimplus.examples.SimulationModel;
 
 import org.cloudbus.cloudsim.brokers.DatacenterBroker;
 import org.cloudbus.cloudsim.datacenters.Datacenter;
@@ -6,11 +6,10 @@ import org.cloudbus.cloudsim.hosts.Host;
 import org.cloudsimplus.examples.HybridModel.MyBroker;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
-public class NSGeneticAlgorithm {
+public class NSGA {
 
 
     List<Double> makespanList = new ArrayList<>();

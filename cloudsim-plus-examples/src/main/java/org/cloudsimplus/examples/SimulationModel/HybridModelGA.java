@@ -21,12 +21,11 @@
  *     You should have received a copy of the GNU General Public License
  *     along with CloudSim Plus. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.cloudsimplus.examples.MyModel;
+package org.cloudsimplus.examples.SimulationModel;
 
 import ch.qos.logback.classic.Level;
 import org.cloudbus.cloudsim.cloudlets.Cloudlet;
 import org.cloudbus.cloudsim.cloudlets.CloudletExecution;
-import org.cloudbus.cloudsim.cloudlets.CloudletSimple;
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.datacenters.Datacenter;
 import org.cloudbus.cloudsim.datacenters.DatacenterSimple;
@@ -39,7 +38,6 @@ import org.cloudbus.cloudsim.schedulers.cloudlet.CloudletSchedulerSpaceShared;
 import org.cloudbus.cloudsim.schedulers.cloudlet.CloudletSchedulerTimeShared;
 import org.cloudbus.cloudsim.schedulers.vm.VmSchedulerSpaceShared;
 import org.cloudbus.cloudsim.util.SwfWorkloadFileReader;
-import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelDynamic;
 import org.cloudbus.cloudsim.vms.Vm;
 import org.cloudbus.cloudsim.vms.VmSimple;
 import org.cloudsimplus.examples.HybridModel.MyBroker;
@@ -61,7 +59,7 @@ import java.util.*;
  */
 
 
-public class HybridModelNSGA {
+public class HybridModelGA {
 
     private static final double INTERVAL = 25;
     private static final int  HOSTS = 20;
@@ -85,14 +83,15 @@ public class HybridModelNSGA {
         add(4000);
     } };
 
-    private static final int CLOUDLETS = 2000;
-    private static final int CLOUDLET_PES = 2;
-    private static final int CLOUDLET_LENGTH = 10_000;
 
-    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile =  1000; // Integer.MAX_VALUE
+//    private static final int CLOUDLETS = 2000;
+//    private static final int CLOUDLET_PES = 2;
+//    private static final int CLOUDLET_LENGTH = 10_000;
+//    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile =  13000; // Integer.MAX_VALUE
     //private static final String WORKLOAD_FILENAME = "workload/swf/KTH-SP2-1996-2.1-cln.swf.gz";
     //private static final String WORKLOAD_FILENAME = "workload/swf/HPC2N-2002-2.2-cln.swf.gz";     // 202871
     private static final String WORKLOAD_FILENAME = "workload/swf/NASA-iPSC-1993-3.1-cln.swf.gz";  // 18239
+
 
     private CloudSim simulation;
     private List<Vm> vmList;
@@ -102,158 +101,118 @@ public class HybridModelNSGA {
     int heuristicIndex;
     int schedulingHeuristic;
 
-    //List<Double> powerSpecList = Stream.iterate(1.0, n -> n + 1.0).limit(100).collect(Collectors.toList());
-    //List<Double> powerSpecList = Stream.iterate(10.0, n -> n + 10.0).limit(10).collect(Collectors.toList());
-    //List<Double> powerModelSpecPowerHpProLiantMl110G3PentiumD930 = Arrays.asList(105.0, 112.0, 118.0, 125.0, 131.0, 137.0, 147.0, 153.0, 157.0, 164.0, 169.0 );
-    //List<Double> powerModelSpecPowerHpProLiantMl110G4Xeon3040 = Arrays.asList(86.0, 89.4, 92.6, 96.0, 99.5, 102.0, 106.0, 108.0, 112.0, 114.0, 117.0);
-    //List<Double> powerModelSpecPowerHpProLiantMl110G5Xeon3075 = Arrays.asList(93.7, 97.0, 101.0, 105.0, 110.0, 116.0, 121.0, 125.0, 129.0, 133.0, 135.0);
-    //List<Double> powerModelSpecPowerIbmX3250XeonX3470 = Arrays.asList(41.6, 46.7, 52.3, 57.9, 65.4, 73.0, 80.7, 89.5, 99.6, 105.0, 113.0);
-    //List<Double> powerModelSpecPowerIbmX3250XeonX3480 = Arrays.asList(42.3, 46.7, 49.7, 55.4, 61.8, 69.3, 76.1, 87.0, 96.1, 106.0, 113.0);
-    //List<Double> powerModelSpecPowerIbmX3550XeonX5670 = Arrays.asList(66.0, 107.0, 120.0, 131.0, 143.0, 156.0, 173.0, 191.0, 211.0, 229.0, 247.0);
-    //List<Double> powerModelSpecPowerIbmX3550XeonX5675 = Arrays.asList(58.4, 98.0, 109.0, 118.0, 128.0, 140.0, 153.0, 170.0, 189.0, 205.0, 222.0);
 
     Chromosome solutionCandidate;
-
     ArrayList<List<Cloudlet>> heuristicSpecificFinishedCloudletsList = new ArrayList<List<Cloudlet>>();
+    ArrayList<ExperimentVariables> exVariables = new ArrayList<>();
 
     public static void main(String[] args) {
-        new HybridModelNSGA();
+        new HybridModelGA();
     }
 
-    private HybridModelNSGA() {
+    private HybridModelGA() {
 
-        Log.setLevel(Level.OFF);
+        exVariables.add(new ExperimentVariables(20,10,24,7,2,3,0.5,0.4, 0.33,0.33, 0.33));
 
-        NSGeneticAlgorithm gnew = new NSGeneticAlgorithm();
-        List<Chromosome> chromosomeList = gnew.createInitialPopulation(5, 24, 7);
-        List<Chromosome> childChromosomes;
-        List<Chromosome> allChromosomes;
+        for (ExperimentVariables ev: exVariables
+             ) {
 
-        for (int generation = 0; generation < 1; generation++) {
+            Log.setLevel(Level.OFF);
 
-            System.out.println("*********************************Generation "+generation+" starts**************************************\n");
+            for (int ws = 0; ws < 2; ws++) {
 
-            for (int i = 0; i < chromosomeList.size(); i++) {
+                System.out.println("******************************************** WorkloadNum: "+ws+" ******************************************************");
 
-                System.out.println("*********************Chromosome "+i+" of generation "+generation+" starts***************************************\n");
+                List<Integer> workloadSizes = Arrays.asList(4000, 4000, 4000, 4000, 4000, 4000, 4000);
+                int workloadSize = workloadSizes.get(ws);
 
-                heuristicIndex = 0;
+                for (int opt = 0; opt < 1; opt++) {
 
-                simulation = new CloudSim();
+                    System.out.println("******************************************** Optimization: "+opt+" ******************************************************");
 
-                datacenter0 = createDatacenter();
-                //datacenter0.setSchedulingInterval(10);
+                    GA gnew = new GA();
+                    List<Chromosome> chromosomeList = gnew.createInitialPopulation(ev.popSize, ev.chromosomeLength, ev.numOfHeuristics);
 
-                broker0 = new MyBroker(simulation);
+                    for (int generation = 0; generation < ev.numOfGenerations; generation++) {
 
-                vmList = createVmsSpaceShared();
+                        System.out.println("*********************************Generation " + generation + " starts**************************************\n");
 
-                //cloudletList = createCloudlets();
-                cloudletList = createCloudletsFromWorkloadFile();
+                        for (int i = 0; i < chromosomeList.size(); i++) {
 
-                considerSubmissionTimes(0);
+                            System.out.println("*********************Chromosome " + i + " of generation " + generation + " starts***************************************\n");
 
-                simulation.addOnClockTickListener(this::pauseSimulation);
-                simulation.addOnSimulationPauseListener(this::switchSchedulingHeuristics);
+                            heuristicIndex = 0;
 
-                broker0.submitVmList(vmList);
-                broker0.submitCloudletList(cloudletList);
+                            simulation = new CloudSim();
 
-                solutionCandidate  = chromosomeList.get(i);
-                solutionCandidate.getGeneList().forEach(gene -> System.out.print(gene.getSchedulingHeuristic()));
-                schedulingHeuristic = solutionCandidate.getGeneList().get(heuristicIndex).getSchedulingHeuristic();
-                System.out.println("\n\nHeuristic Switched to " + schedulingHeuristic);
-                broker0.selectSchedulingPolicy(schedulingHeuristic, vmList,cloudletList);
+                            datacenter0 = createDatacenter();
+                            //datacenter0.setSchedulingInterval(10);
 
+                            broker0 = new MyBroker(simulation);
 
-                simulation.start();
+                            vmList = createVmsSpaceShared();
 
-                gnew.printPerformanceMetrics(datacenter0,broker0);
+                            //cloudletList = createCloudlets();
+                            cloudletList = createCloudletsFromWorkloadFile(workloadSize);
 
-                gnew.computeMakespan(broker0);
-                gnew.computePowerConsumption(datacenter0);
+                            //broker0.setVmDestructionDelay(50);
 
-                cloudletList = null;
-                vmList = null;
-                datacenter0.getHostList().forEach(h->h=null);
-                datacenter0 = null;
-                broker0 = null;
-                simulation = null;
+                            considerSubmissionTimes(0);
 
-                System.out.println("*********************************Chromosome "+i+" of generation "+generation+" ends********************************\n");
+                            simulation.addOnClockTickListener(this::pauseSimulation);
+                            simulation.addOnSimulationPauseListener(this::switchSchedulingHeuristics);
 
-            }
+                            broker0.submitVmList(vmList);
+                            broker0.submitCloudletList(cloudletList);
 
-            System.out.println(gnew.makespanList);
-            System.out.println(gnew.powerConsumptionList);
+                            solutionCandidate = chromosomeList.get(i);
+                            solutionCandidate.getGeneList().forEach(gene -> System.out.print(gene.getSchedulingHeuristic() + " "));
+                            schedulingHeuristic = solutionCandidate.getGeneList().get(heuristicIndex).getSchedulingHeuristic();
+                            System.out.println("\n\nHeuristic Switched to " + schedulingHeuristic);
+                            broker0.selectSchedulingPolicy(schedulingHeuristic, vmList, cloudletList);
 
-            childChromosomes = gnew.createChildChromosomes(chromosomeList);
+                            simulation.start();
 
-            for (int i = 0; i < childChromosomes.size(); i++) {
+                            gnew.printPerformanceMetrics(datacenter0, broker0);
 
-                System.out.println("*********************Chromosome "+i+" of generation "+generation+" starts***************************************\n");
-
-                heuristicIndex = 0;
-
-                simulation = new CloudSim();
-
-                datacenter0 = createDatacenter();
-                //datacenter0.setSchedulingInterval(10);
-
-                broker0 = new MyBroker(simulation);
-
-                vmList = createVmsSpaceShared();
-
-                //cloudletList = createCloudlets();
-                cloudletList = createCloudletsFromWorkloadFile();
-
-                considerSubmissionTimes(0);
-
-                simulation.addOnClockTickListener(this::pauseSimulation);
-                simulation.addOnSimulationPauseListener(this::switchSchedulingHeuristics);
-
-                broker0.submitVmList(vmList);
-                broker0.submitCloudletList(cloudletList);
-
-                solutionCandidate  = childChromosomes.get(i);
-                solutionCandidate.getGeneList().forEach(gene -> System.out.print(gene.getSchedulingHeuristic()));
-                schedulingHeuristic = solutionCandidate.getGeneList().get(heuristicIndex).getSchedulingHeuristic();
-                System.out.println("\n\nHeuristic Switched to " + schedulingHeuristic);
-                broker0.selectSchedulingPolicy(schedulingHeuristic, vmList,cloudletList);
+                            gnew.computeMakespan(broker0);
+                            gnew.computeTotalWaitingTime(broker0);
+                            gnew.computeFlowTime(broker0);
+                            //gnew.computeDegreeofImbalance(broker0);
 
 
-                simulation.start();
+                            cloudletList = null;
+                            vmList = null;
+                            broker0 = null;
+                            datacenter0.getHostList().forEach(h -> h = null);
+                            datacenter0 = null;
+                            simulation = null;
+                            System.gc();
 
-                gnew.printPerformanceMetrics(datacenter0,broker0);
 
-                gnew.computeMakespan(broker0);
-                gnew.computePowerConsumption(datacenter0);
+                            System.out.println("*********************************Chromosome " + i + " of generation " + generation + " ends********************************\n");
 
-                cloudletList = null;
-                vmList = null;
-                datacenter0.getHostList().forEach(h->h=null);
-                datacenter0 = null;
-                broker0 = null;
-                simulation = null;
+                        }
 
-                System.out.println("*********************************Chromosome "+i+" of generation "+generation+" ends********************************\n");
+                        gnew.computeFitness(chromosomeList, ev.w1, ev.w2, ev.w3);
+                        //gnew.computeFitness(chromosomeList);
+
+                        gnew.generationBest();
+
+                        System.out.println("\n*********************************Generation " + generation + " ends**************************************\n");
+
+                        gnew.elitismSelection(ev.eliteCount);
+                        gnew.parentSelectionCrossoverMutation(ev.tournamentCount, ev.crossoverRate, ev.mutationRate);
+
+                        chromosomeList = gnew.getNextPopulation();
+
+                    }
+
+                }
 
             }
-
-            System.out.println(gnew.makespanList);
-            System.out.println(gnew.powerConsumptionList);
-
-            allChromosomes = gnew.combineChromosomes(chromosomeList,childChromosomes);
-
-            gnew.nonDominatedSorting(allChromosomes,gnew.makespanList, gnew.powerConsumptionList);
-
-
 
         }
-
-
-
-
 
     }
 
@@ -356,25 +315,24 @@ public class HybridModelNSGA {
         return list;
     }
 
-    private List<Cloudlet> createCloudletsFromWorkloadFile() {
+    private List<Cloudlet> createCloudletsFromWorkloadFile(int n) {
         SwfWorkloadFileReader reader = SwfWorkloadFileReader.getInstance(WORKLOAD_FILENAME, 3);
-        reader.setMaxLinesToRead(maximumNumberOfCloudletsToCreateFromTheWorkloadFile);
+        reader.setMaxLinesToRead(n);
         this.cloudletList = reader.generateWorkload();
-        //cloudletList.remove(cloudletList.get(3));
         System.out.printf("# Created %12d Cloudlets for %n", this.cloudletList.size());
         return cloudletList;
     }
 
-    private List<Cloudlet> createCloudlets() {
-        final List<Cloudlet> list = new ArrayList<>(CLOUDLETS);
-        final UtilizationModelDynamic utilizationModel = new UtilizationModelDynamic(0.5);
-        for (int i = 0; i < CLOUDLETS; i++) {
-            final Cloudlet cloudlet = new CloudletSimple(CLOUDLET_LENGTH, CLOUDLET_PES, utilizationModel);
-            cloudlet.setSizes(1);
-            list.add(cloudlet);
-        }
-        return list;
-    }
+//    private List<Cloudlet> createCloudlets() {
+//        final List<Cloudlet> list = new ArrayList<>(CLOUDLETS);
+//        final UtilizationModelDynamic utilizationModel = new UtilizationModelDynamic(0.5);
+//        for (int i = 0; i < CLOUDLETS; i++) {
+//            final Cloudlet cloudlet = new CloudletSimple(CLOUDLET_LENGTH, CLOUDLET_PES, utilizationModel);
+//            cloudlet.setSizes(1);
+//            list.add(cloudlet);
+//        }
+//        return list;
+//    }
 
     private void totalHostMIPSCapacity(){
         double totalHostMIPSCapacity = 0.0;
