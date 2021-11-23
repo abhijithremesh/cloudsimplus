@@ -30,7 +30,7 @@ public class MinMinPolicy {
         int noOfCloudlets = cloudletList.size();
 
         // Completion time matrix and execution time matrix for cloudlets-VM
-        Double completionTime[][] = new Double[noOfCloudlets][noOfVms];
+        double completionTime[][] = new double[noOfCloudlets][noOfVms];
         //double executionTime[][] = new double[noOfCloudlets][noOfVms];
 
         // Init some variables
@@ -94,12 +94,14 @@ public class MinMinPolicy {
             }
 
 
+            /*
             // Computing the completion time matrix for cloudlet-VM
             for(int i=0;i<noOfCloudlets;i++){
                 for(int j=0;j<noOfVms;j++){
                     completionTime[i][j] = null;
                 }
             }
+            */
 
             System.gc();
 
@@ -123,7 +125,7 @@ public class MinMinPolicy {
         return cloudlet.getLength() / (vm.getMips() * vm.getNumberOfPes());
     }
 
-    private double getMinValue(Double[][] numbers) {
+    private double getMinValue(double[][] numbers) {
         double minValue = 0;
 
         for (int j = 0; j < numbers.length; j++) {
@@ -151,7 +153,7 @@ public class MinMinPolicy {
         return minValue ;
     }
 
-    private int[] getIndices(Double [][] numbers,double value) {
+    private int[] getIndices(double [][] numbers,double value) {
         int[] Indices = new int[2];
         for (int i = 0; i < numbers.length; i++) {
             for (int j = 0; j < numbers[i].length; j++) {
