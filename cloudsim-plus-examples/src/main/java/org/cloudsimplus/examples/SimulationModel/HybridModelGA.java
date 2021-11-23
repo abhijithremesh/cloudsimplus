@@ -124,11 +124,11 @@ public class HybridModelGA {
 
             Log.setLevel(Level.OFF);
 
-            for (int ws = 0; ws < 1; ws++) {
+            for (int ws = 0; ws < 4; ws++) {
 
                 System.out.println("******************************************** WorkloadNum: "+ws+" ******************************************************");
 
-                List<Integer> workloadSizes = Arrays.asList(1000,13000,16000,18239);
+                List<Integer> workloadSizes = Arrays.asList(10000,13000,16000,18239);
                 int workloadSize = workloadSizes.get(ws);
                 //List<Cloudlet> workload= createCloudletsFromWorkloadFile(workloadSize);
 
