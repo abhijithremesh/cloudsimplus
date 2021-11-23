@@ -47,8 +47,8 @@ public class MaxMinPolicy {
         int noOfCloudlets = cloudletList.size();
 
         // Completion time matrix and execution time matrix for cloudlets-VM
-        double completionTime[][] = new double[noOfCloudlets][noOfVms];
-        double executionTime[][] = new double[noOfCloudlets][noOfVms];
+        Double completionTime[][] = new Double[noOfCloudlets][noOfVms];
+        //double executionTime[][] = new double[noOfCloudlets][noOfVms];
 
         // Init some variables
         double time =0.0;
@@ -111,10 +111,17 @@ public class MaxMinPolicy {
             }
 
             cloudletVmMinList.clear();
-
             //System.out.println("*********************************");
-
         }
+
+        // Computing the completion time matrix for cloudlet-VM
+        for(int i=0;i<noOfCloudlets;i++){
+            for(int j=0;j<noOfVms;j++){
+                completionTime[i][j] = null;
+            }
+        }
+
+        System.gc();
 
 
     }
@@ -134,7 +141,7 @@ public class MaxMinPolicy {
     }
 
     // get the minimum completion time per cloudlet
-    private void getMinCompletionTimePerCloudlet(double[][] numbers,int c) {
+    private void getMinCompletionTimePerCloudlet(Double[][] numbers,int c) {
         double minValue = 0;
         int vm=0;
         for (int i = 0; i < numbers[c].length; i++) {
