@@ -91,7 +91,7 @@ public class EvaluateSingleChromosome {
     private static final int CLOUDLET_LENGTH = 10_000;
 
 
-    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile =  4000; //
+    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile =  7000; //
     //private static final String WORKLOAD_FILENAME = "workload/swf/KTH-SP2-1996-2.1-cln.swf.gz";
     //private static final String WORKLOAD_FILENAME = "workload/swf/HPC2N-2002-2.2-cln.swf.gz";     // 202871
     private static final String WORKLOAD_FILENAME = "workload/swf/NASA-iPSC-1993-3.1-cln.swf.gz";  // 18239
@@ -117,7 +117,7 @@ public class EvaluateSingleChromosome {
 
     ArrayList<List<Cloudlet>> heuristicSpecificFinishedCloudletsList = new ArrayList<List<Cloudlet>>();
 
-    String n = "653564063164503351043143";
+    String n = "366412460300350202131202";
 
     Chromosome solutionCandidate;
 
@@ -279,10 +279,10 @@ public class EvaluateSingleChromosome {
     private List<Cloudlet> createCloudletsFromWorkloadFile() {
         SwfWorkloadFileReader reader = SwfWorkloadFileReader.getInstance(WORKLOAD_FILENAME, 3);
         reader.setMaxLinesToRead(maximumNumberOfCloudletsToCreateFromTheWorkloadFile);
-        this.cloudletList = reader.generateWorkload();
-        //cloudletList.remove(cloudletList.get(3));
-        System.out.printf("# Created %12d Cloudlets for %n", this.cloudletList.size());
-        return cloudletList;
+        List<Cloudlet> list = reader.generateWorkload();
+        //this.cloudletList = reader.generateWorkload();
+        System.out.printf("# Created %12d Cloudlets for %n", list.size());
+        return list;
     }
 
     private List<Cloudlet> createCloudlets() {

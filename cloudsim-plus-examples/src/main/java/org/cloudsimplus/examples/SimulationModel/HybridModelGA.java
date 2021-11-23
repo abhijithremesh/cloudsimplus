@@ -112,10 +112,10 @@ public class HybridModelGA {
 
     private HybridModelGA() {
 
-        exVariables.add(new ExperimentVariables(20,10,24,7,2,3,0.5,0.4, 0.33,0.33, 0.33));
-        exVariables.add(new ExperimentVariables(20,10,24,7,2,3,0.5,0.4, 0.60,0.20, 0.20));
-        exVariables.add(new ExperimentVariables(20,10,24,7,2,3,0.5,0.4, 0.80,0.10, 0.10));
-        exVariables.add(new ExperimentVariables(20,10,24,7,2,3,0.5,0.4, 0.90,0.05, 0.05));
+        exVariables.add(new ExperimentVariables(50,10,24,7,2,3,0.5,0.4, 0.50,0.50, 0.0));
+        //exVariables.add(new ExperimentVariables(50,10,24,5,2,3,0.5,0.4, 0.60,0.20, 0.20));
+        //exVariables.add(new ExperimentVariables(50,20,24,7,2,3,0.5,0.4, 0.80,0.10, 0.10));
+        //exVariables.add(new ExperimentVariables(50,20,24,5,2,3,0.5,0.4, 0.90,0.05, 0.05));
 
         for (ExperimentVariables ev: exVariables
              ) {
@@ -124,19 +124,21 @@ public class HybridModelGA {
 
             Log.setLevel(Level.OFF);
 
-            for (int ws = 0; ws < 7; ws++) {
+            for (int ws = 0; ws < 4; ws++) {
 
                 System.out.println("******************************************** WorkloadNum: "+ws+" ******************************************************");
 
-                List<Integer> workloadSizes = Arrays.asList(1000, 4000, 7000, 10000, 13000, 16000, 18000);
+                List<Integer> workloadSizes = Arrays.asList(10000,13000,16000,18239);
                 int workloadSize = workloadSizes.get(ws);
+                //List<Cloudlet> workload= createCloudletsFromWorkloadFile(workloadSize);
 
-                for (int opt = 0; opt < 10; opt++) {
+                for (int opt = 0; opt < 1; opt++) {
 
                     System.out.println("******************************************** Optimization: "+opt+" ******************************************************");
 
                     GA gnew = new GA();
                     List<Chromosome> chromosomeList = gnew.createInitialPopulation(ev.popSize, ev.chromosomeLength, ev.numOfHeuristics);
+
 
                     for (int generation = 0; generation < ev.numOfGenerations; generation++) {
 
@@ -151,14 +153,14 @@ public class HybridModelGA {
                             simulation = new CloudSim();
 
                             datacenter0 = createDatacenter();
-                            //datacenter0.setSchedulingInterval(10);
-
                             broker0 = new MyBroker(simulation);
-
                             vmList = createVmsSpaceShared();
 
-                            //cloudletList = createCloudlets();
+                            //cloudletList = workload;
                             cloudletList = createCloudletsFromWorkloadFile(workloadSize);
+                            //cloudletList.addAll(workload);
+                            //Collections.copy(cloudletList,workload);
+                            //System.out.println("Poora: "+cloudletList.size());
 
                             //broker0.setVmDestructionDelay(50);
 
@@ -183,7 +185,6 @@ public class HybridModelGA {
                             gnew.computeMakespan(broker0);
                             gnew.computeTotalWaitingTime(broker0);
                             gnew.computeFlowTime(broker0);
-                            //gnew.computeDegreeofImbalance(broker0);
 
 
                             cloudletList = null;
@@ -323,9 +324,9 @@ public class HybridModelGA {
     private List<Cloudlet> createCloudletsFromWorkloadFile(int n) {
         SwfWorkloadFileReader reader = SwfWorkloadFileReader.getInstance(WORKLOAD_FILENAME, 3);
         reader.setMaxLinesToRead(n);
-        this.cloudletList = reader.generateWorkload();
-        System.out.printf("# Created %12d Cloudlets for %n", this.cloudletList.size());
-        return cloudletList;
+        List<Cloudlet> list = reader.generateWorkload();
+        System.out.printf("# Created %12d Cloudlets for %n", list.size());
+        return list;
     }
 
 //    private List<Cloudlet> createCloudlets() {
@@ -339,23 +340,7 @@ public class HybridModelGA {
 //        return list;
 //    }
 
-    private void totalHostMIPSCapacity(){
-        double totalHostMIPSCapacity = 0.0;
-        for (Host h: datacenter0.getHostList()
-        ) {
-            totalHostMIPSCapacity += h.getTotalMipsCapacity();
-        }
-        System.out.println("Total HOST MIPS capacity: "+totalHostMIPSCapacity);
-    }
 
-    private void totalVmMIPSCapacity(){
-        double totalVmMIPSCapacity = 0.0;
-        for (Vm v: broker0.getVmCreatedList()
-        ) {
-            totalVmMIPSCapacity += v.getTotalMipsCapacity();
-        }
-        System.out.println("Total VMs MIPS capacity: "+totalVmMIPSCapacity);
-    }
 
     private void considerSubmissionTimes(int n) {
 
