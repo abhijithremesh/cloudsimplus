@@ -112,7 +112,7 @@ public class HybridModelGA {
 
     private HybridModelGA() {
 
-        exVariables.add(new ExperimentVariables(25,10,24,7,2,3,0.5,0.4, 0.50,0.50, 0.0));
+        exVariables.add(new ExperimentVariables(50,10,24,7,2,3,0.5,0.4, 0.50,0.50, 0.0));
         //exVariables.add(new ExperimentVariables(50,10,24,5,2,3,0.5,0.4, 0.60,0.20, 0.20));
         //exVariables.add(new ExperimentVariables(50,20,24,7,2,3,0.5,0.4, 0.80,0.10, 0.10));
         //exVariables.add(new ExperimentVariables(50,20,24,5,2,3,0.5,0.4, 0.90,0.05, 0.05));
@@ -128,7 +128,7 @@ public class HybridModelGA {
 
                 System.out.println("******************************************** WorkloadNum: "+ws+" ******************************************************");
 
-                List<Integer> workloadSizes = Arrays.asList(4000,13000,16000,18239);
+                List<Integer> workloadSizes = Arrays.asList(1000,13000,16000,18239);
                 int workloadSize = workloadSizes.get(ws);
                 //List<Cloudlet> workload= createCloudletsFromWorkloadFile(workloadSize);
 
