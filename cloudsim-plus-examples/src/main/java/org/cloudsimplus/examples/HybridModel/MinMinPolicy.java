@@ -30,7 +30,7 @@ public class MinMinPolicy {
         int noOfCloudlets = cloudletList.size();
 
         // Completion time matrix and execution time matrix for cloudlets-VM
-        double completionTime[][] = new double[noOfCloudlets][noOfVms];
+        double[][] completionTime = new double[noOfCloudlets][noOfVms];
         //double executionTime[][] = new double[noOfCloudlets][noOfVms];
 
         // Init some variables
@@ -103,7 +103,7 @@ public class MinMinPolicy {
             }
             */
 
-            System.gc();
+            //System.gc();
 
         }
 

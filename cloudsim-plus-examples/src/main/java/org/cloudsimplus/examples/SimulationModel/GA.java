@@ -46,7 +46,6 @@ public class GA {
     public void computeMakespan(MyBroker broker){
 
         double makespan = broker.getCloudletFinishedList().get(broker.getCloudletFinishedList().size() - 1).getFinishTime();
-        System.out.println("Makespan: "+roundDecimals(makespan));
         this.makespanList.add(roundDecimals(makespan));
         System.out.println("\nmakespanList: "+makespanList);
 
@@ -93,9 +92,9 @@ public class GA {
 
         this. chromosomeList = chromosomeList;
 
-        this.makespanList = this.makespanList.stream().map(f->((1127.02-f)/(1127.02-18.26)*100)).collect(Collectors.toList());
-        this.flowTimeList = this.flowTimeList.stream().map(f->((1130793.77-f)/(1130793.77-3495.38)*100)).collect(Collectors.toList());
-        this.totalWaitingTimeList = this.totalWaitingTimeList.stream().map(f->((1107153.9-f)/(1107153.9-2471.02)*100)).collect(Collectors.toList());
+        this.makespanList = this.makespanList.stream().map(f->((1127.02-f)/(1127.02-18.26))*100).collect(Collectors.toList());
+        this.flowTimeList = this.flowTimeList.stream().map(f->((1130793.77-f)/(1130793.77-3495.38))*100).collect(Collectors.toList());
+        this.totalWaitingTimeList = this.totalWaitingTimeList.stream().map(f->((1107153.9-f)/(1107153.9-2471.02))*100).collect(Collectors.toList());
         //this.degreeOfImbalanceList = this.degreeOfImbalanceList.stream().map(f->(2.49-f)/(2.49-0.35)).collect(Collectors.toList());
         //this.makespanList = this.makespanList.stream().map(f->(41.27/f)).collect(Collectors.toList());
         //this.degreeOfImbalanceList = this.degreeOfImbalanceList.stream().map(f->(0.35/f)).collect(Collectors.toList());

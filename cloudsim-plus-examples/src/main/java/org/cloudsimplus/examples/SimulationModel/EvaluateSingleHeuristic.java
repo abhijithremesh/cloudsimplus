@@ -84,30 +84,20 @@ public class EvaluateSingleHeuristic {
         add(4000);
     } };
 
-    private static final int CLOUDLETS = 2000;
-    private static final int CLOUDLET_PES = 2;
-    private static final int CLOUDLET_LENGTH = 10_000;
+    private static final int CLOUDLETS = 10000;
+    private static final int CLOUDLET_PES = 10;
+    private static final int CLOUDLET_LENGTH = 1000;
 
     private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile = 4000 ; // Integer.MAX_VALUE
     //private static final String WORKLOAD_FILENAME = "workload/swf/KTH-SP2-1996-2.1-cln.swf.gz";
     //private static final String WORKLOAD_FILENAME = "workload/swf/HPC2N-2002-2.2-cln.swf.gz";     // 202871
     private static final String WORKLOAD_FILENAME = "workload/swf/NASA-iPSC-1993-3.1-cln.swf.gz";  // 18239
 
-    private final CloudSim simulation;
+    private CloudSim simulation;
     private List<Vm> vmList;
     private List<Cloudlet> cloudletList;
     private Datacenter datacenter0;
     MyBroker broker0;
-
-    //List<Double> powerSpecList = Stream.iterate(1.0, n -> n + 1.0).limit(100).collect(Collectors.toList());
-    //List<Double> powerSpecList = Stream.iterate(10.0, n -> n + 10.0).limit(10).collect(Collectors.toList());
-    //List<Double> powerModelSpecPowerHpProLiantMl110G3PentiumD930 = Arrays.asList(105.0, 112.0, 118.0, 125.0, 131.0, 137.0, 147.0, 153.0, 157.0, 164.0, 169.0 );
-    //List<Double> powerModelSpecPowerHpProLiantMl110G4Xeon3040 = Arrays.asList(86.0, 89.4, 92.6, 96.0, 99.5, 102.0, 106.0, 108.0, 112.0, 114.0, 117.0);
-    //List<Double> powerModelSpecPowerHpProLiantMl110G5Xeon3075 = Arrays.asList(93.7, 97.0, 101.0, 105.0, 110.0, 116.0, 121.0, 125.0, 129.0, 133.0, 135.0);
-    //List<Double> powerModelSpecPowerIbmX3250XeonX3470 = Arrays.asList(41.6, 46.7, 52.3, 57.9, 65.4, 73.0, 80.7, 89.5, 99.6, 105.0, 113.0);
-    //List<Double> powerModelSpecPowerIbmX3250XeonX3480 = Arrays.asList(42.3, 46.7, 49.7, 55.4, 61.8, 69.3, 76.1, 87.0, 96.1, 106.0, 113.0);
-    //List<Double> powerModelSpecPowerIbmX3550XeonX5670 = Arrays.asList(66.0, 107.0, 120.0, 131.0, 143.0, 156.0, 173.0, 191.0, 211.0, 229.0, 247.0);
-    //List<Double> powerModelSpecPowerIbmX3550XeonX5675 = Arrays.asList(58.4, 98.0, 109.0, 118.0, 128.0, 140.0, 153.0, 170.0, 189.0, 205.0, 222.0);
 
     public static void main(String[] args) {
         new EvaluateSingleHeuristic();
@@ -115,135 +105,143 @@ public class EvaluateSingleHeuristic {
 
     private EvaluateSingleHeuristic() {
 
-        Log.setLevel(Level.OFF);
+            Log.setLevel(Level.OFF);
 
-        simulation = new CloudSim();
-        datacenter0 = createDatacenter();
+            simulation = new CloudSim();
+            datacenter0 = createDatacenter();
+            broker0 = new MyBroker(simulation);
+            vmList = createVmsAndSubmit();
+            cloudletList = createWorkloadCloudletsAndSubmit();
 
-        broker0 = new MyBroker(simulation);
+            broker0.FirstComeFirstServe(vmList,cloudletList);
+            //broker0.Random(vmList, cloudletList);
+            //broker0.ShortestJobFirst(vmList, cloudletList);
+            //broker0.LongestJobFirst(vmList,cloudletList);
+            //broker0.ShortestCloudletFastestPE(vmList, cloudletList);
+            //broker0.LongestCloudletFastestPE(vmList, cloudletList);
+            //broker0.MinMin(vmList, cloudletList);
+            //broker0.MaxMin(vmList, cloudletList);
 
-        vmList = createVmsSpaceShared();
+            simulation.start();
 
-        //cloudletList = createCloudlets();
-        cloudletList = createCloudletsFromWorkloadFile();
+            //new CloudletsTableBuilder(broker0.getCloudletFinishedList()).build();
 
-        considerSubmissionTimes(0);
+            printPerformanceMetrics(datacenter0, broker0);
 
-        broker0.submitVmList(vmList);
-        broker0.submitCloudletList(cloudletList);
-
-        broker0.setVmDestructionDelay(50);
-
-        //broker0.FirstComeFirstServe(vmList,cloudletList);
-        //broker0.Random(vmList, cloudletList);
-        //broker0.ShortestJobFirst(vmList, cloudletList);
-        //broker0.LongestJobFirst(vmList,cloudletList);
-        //broker0.ShortestCloudletFastestPE(vmList, cloudletList);
-        //broker0.LongestCloudletFastestPE(vmList, cloudletList);
-        //broker0.MinMin(vmList, cloudletList);
-        //broker0.MaxMin(vmList, cloudletList);
+        }
 
 
-        simulation.start();
+//    private Datacenter createDatacenter() {
+//        final List<Host> hostList = new ArrayList<>(HOSTS);
+//        for(int i = 0; i < HOSTS; i++) {
+//            Host host = createHost();
+//            host.setPowerModel(getPowerSpecs().get(i % 4));
+//            hostList.add(host);
+//        }
+//        return new DatacenterSimple(simulation, hostList);
+//    }
+//
+//    private Host createHost() {
+//        final List<Pe> peList = new ArrayList<>(HOST_PES);
+//        for (int i = 0; i < HOST_PES; i++) {
+//            peList.add(new PeSimple(HOST_MIPS));
+//        }
+//        Host h = new HostSimple(HOST_RAM, HOST_BW, HOST_STORAGE, peList);
+//        h.setVmScheduler(new VmSchedulerSpaceShared());
+//        h.enableUtilizationStats();
+//        return h;
+//    }
 
-        //totalHostMIPSCapacity();
-        //totalVmMIPSCapacity();
-
-        //new CloudletsTableBuilder(broker0.getCloudletFinishedList()).build();
-
-        printPerformanceMetrics(datacenter0,broker0);
-
-
-
-
+        private Datacenter createDatacenter() {
+        return new DatacenterSimple(simulation, createHosts());
     }
 
-
-    private Datacenter createDatacenter() {
+    private List<Host> createHosts() {
         final List<Host> hostList = new ArrayList<>(HOSTS);
-        for(int i = 0; i < HOSTS; i++) {
-            Host host = createHost();
-            host.setPowerModel(getPowerSpecs().get(i % 4));
-            hostList.add(host);
+        for(int h = 0; h < HOSTS; h++) {
+            final List<Pe> peList = new ArrayList<>(HOST_PES);
+            for (int p = 0; p < HOST_PES; p++) {
+                peList.add(new PeSimple(HOST_MIPS));
+            }
+            hostList.add(new HostSimple(HOST_RAM, HOST_BW, HOST_STORAGE, peList));
         }
-        return new DatacenterSimple(simulation, hostList);
+        hostList.forEach(host -> host.setVmScheduler(new VmSchedulerSpaceShared()));
+        hostList.forEach(host -> host.enableUtilizationStats());
+        return hostList;
     }
 
-    private Host createHost() {
-        final List<Pe> peList = new ArrayList<>(HOST_PES);
-        for (int i = 0; i < HOST_PES; i++) {
-            peList.add(new PeSimple(HOST_MIPS));
-        }
-        Host h = new HostSimple(HOST_RAM, HOST_BW, HOST_STORAGE, peList);
-        h.setVmScheduler(new VmSchedulerSpaceShared());
-        h.enableUtilizationStats();
-        return h;
-    }
+//    private List<Vm> createVmsSpaceShared() {
+//        final List<Vm> list = new ArrayList<>(VMS);
+//        for (int i = 0; i < VMS; i++) {
+//            VM_MIPS = VM_MIPSList.get(i % 4);
+//            final Vm vm = new VmSimple(VM_MIPS, VM_PES);
+//            vm.setRam(VM_RAM).setBw(VM_BW).setSize(VM_STORAGE);
+//            vm.setCloudletScheduler(new CloudletSchedulerSpaceShared());
+//            vm.enableUtilizationStats();
+//            list.add(vm);
+//        }
+//        return list;
+//    }
 
-    private List<Vm> createVmsSpaceShared() {
+        private List<Vm> createVmsAndSubmit() {
         final List<Vm> list = new ArrayList<>(VMS);
         for (int i = 0; i < VMS; i++) {
-            VM_MIPS = VM_MIPSList.get(i % 4);
-            final Vm vm = new VmSimple(VM_MIPS, VM_PES);
-            vm.setRam(VM_RAM).setBw(VM_BW).setSize(VM_STORAGE);
-            vm.setCloudletScheduler(new CloudletSchedulerSpaceShared());
-            vm.enableUtilizationStats();
-            list.add(vm);
+            list.add(new VmSimple(VM_MIPSList.get(i % 4), VM_PES));
         }
+        list.forEach(vm -> vm.setRam(VM_RAM).setBw(VM_BW).setSize(VM_STORAGE));
+        list.forEach(vm -> vm.setCloudletScheduler(new CloudletSchedulerSpaceShared()));
+        list.forEach(vm -> vm.enableUtilizationStats());
+        broker0.submitVmList(list);
         return list;
     }
 
-    private List<Cloudlet> createCloudletsFromWorkloadFile() {
+    private List<Cloudlet> createWorkloadCloudletsAndSubmit() {
         SwfWorkloadFileReader reader = SwfWorkloadFileReader.getInstance(WORKLOAD_FILENAME, 3);
         reader.setMaxLinesToRead(maximumNumberOfCloudletsToCreateFromTheWorkloadFile);
-        this.cloudletList = reader.generateWorkload();
+        List<Cloudlet> list = reader.generateWorkload();
         //cloudletList.remove(cloudletList.get(3));
-        System.out.printf("# Created %12d Cloudlets for %n", this.cloudletList.size());
-        return cloudletList;
-    }
-
-    private List<Cloudlet> createCloudlets() {
-        final List<Cloudlet> list = new ArrayList<>(CLOUDLETS);
-        final UtilizationModelDynamic utilizationModel = new UtilizationModelDynamic(0.5);
-        for (int i = 0; i < CLOUDLETS; i++) {
-            final Cloudlet cloudlet = new CloudletSimple(CLOUDLET_LENGTH, CLOUDLET_PES, utilizationModel);
-            cloudlet.setSizes(1);
-            list.add(cloudlet);
-        }
+        System.out.printf("# Created %12d Cloudlets for %n", list.size());
+        list.forEach(c->c.setSubmissionDelay(0));
+        broker0.submitCloudletList(list);
         return list;
     }
 
-    private void totalHostMIPSCapacity(){
-        double totalHostMIPSCapacity = 0.0;
-        for (Host h: datacenter0.getHostList()
-        ) {
-            totalHostMIPSCapacity += h.getTotalMipsCapacity();
-        }
-        System.out.println("Total HOST MIPS capacity: "+totalHostMIPSCapacity);
-    }
 
-    private void totalVmMIPSCapacity(){
-        double totalVmMIPSCapacity = 0.0;
-        for (Vm v: broker0.getVmCreatedList()
-        ) {
-            totalVmMIPSCapacity += v.getTotalMipsCapacity();
-        }
-        System.out.println("Total VMs MIPS capacity: "+totalVmMIPSCapacity);
-    }
+//    private List<Cloudlet> createCloudletsFromWorkloadFile() {
+//        SwfWorkloadFileReader reader = SwfWorkloadFileReader.getInstance(WORKLOAD_FILENAME, 3);
+//        reader.setMaxLinesToRead(maximumNumberOfCloudletsToCreateFromTheWorkloadFile);
+//        List<Cloudlet> list = reader.generateWorkload();
+//        //cloudletList.remove(cloudletList.get(3));
+//        System.out.printf("# Created %12d Cloudlets for %n", list.size());
+//        return list;
+//    }
 
-    private void considerSubmissionTimes(int n) {
+//    private List<Cloudlet> createCloudlets() {
+//        final List<Cloudlet> list = new ArrayList<>(CLOUDLETS);
+//        final UtilizationModelDynamic utilizationModel = new UtilizationModelDynamic(0.5);
+//        for (int i = 0; i < CLOUDLETS; i++) {
+//            final Cloudlet cloudlet = new CloudletSimple(CLOUDLET_LENGTH, CLOUDLET_PES, utilizationModel);
+//            cloudlet.setSizes(1);
+//            list.add(cloudlet);
+//        }
+//        return list;
+//    }
 
-        if (n == 1) {
-            double minSubdelay = cloudletList.get(0).getSubmissionDelay();
-            for (Cloudlet c : cloudletList
-            ) {
-                c.setSubmissionDelay(c.getSubmissionDelay() - minSubdelay);
-            }
-        } else if (n == 0){
-            cloudletList.forEach(c->c.setSubmissionDelay(0));
-        }
 
-    }
+
+//    private void considerSubmissionTimes(int n) {
+//
+//        if (n == 1) {
+//            double minSubdelay = cloudletList.get(0).getSubmissionDelay();
+//            for (Cloudlet c : cloudletList
+//            ) {
+//                c.setSubmissionDelay(c.getSubmissionDelay() - minSubdelay);
+//            }
+//        } else if (n == 0){
+//            cloudletList.forEach(c->c.setSubmissionDelay(0));
+//        }
+//
+//    }
 
     public void printPerformanceMetrics(Datacenter datacenter, DatacenterBroker broker){
 
@@ -314,25 +312,7 @@ public class EvaluateSingleHeuristic {
         return  Math.round(value * 100.0) / 100.0;
     }
 
-    public List<PowerModelHostSpec> getPowerSpecs(){
 
-        List<Double> HpProLiantMl110G3PentiumD930 = Arrays.asList(105.0, 112.0, 118.0, 125.0, 131.0, 137.0, 147.0, 153.0, 157.0, 164.0, 169.0 );
-        List<Double> HpProLiantMl110G4Xeon3040 = Arrays.asList(86.0, 89.4, 92.6, 96.0, 99.5, 102.0, 106.0, 108.0, 112.0, 114.0, 117.0);
-        List<Double> IbmX3250XeonX3470 = Arrays.asList(41.6, 46.7, 52.3, 57.9, 65.4, 73.0, 80.7, 89.5, 99.6, 105.0, 113.0);
-        List<Double> IbmX3250XeonX3480 = Arrays.asList(42.3, 46.7, 49.7, 55.4, 61.8, 69.3, 76.1, 87.0, 96.1, 106.0, 113.0);
-        PowerModelHostSpec powerModelHpProLiantMl110G3PentiumD930 = new PowerModelHostSpec(HpProLiantMl110G3PentiumD930);
-        PowerModelHostSpec powerModelHpProLiantMl110G4Xeon3040 = new PowerModelHostSpec(HpProLiantMl110G4Xeon3040);
-        PowerModelHostSpec powerModelIbmX3250XeonX3470 = new PowerModelHostSpec(IbmX3250XeonX3470);
-        PowerModelHostSpec powerModelIbmX3250XeonX3480 = new PowerModelHostSpec(IbmX3250XeonX3480);
-        List<PowerModelHostSpec> powerSpecs = new ArrayList<>();
-        powerSpecs.add(powerModelHpProLiantMl110G3PentiumD930);
-        powerSpecs.add(powerModelHpProLiantMl110G4Xeon3040);
-        powerSpecs.add(powerModelIbmX3250XeonX3470);
-        powerSpecs.add(powerModelIbmX3250XeonX3480);
-
-        return powerSpecs;
-
-    }
 
 
 }

@@ -86,12 +86,12 @@ public class EvaluateSingleChromosome {
         add(4000);
     } };
 
-    private static final int CLOUDLETS = 2000;
+    private static final int CLOUDLETS = 10000;
     private static final int CLOUDLET_PES = 2;
     private static final int CLOUDLET_LENGTH = 10_000;
 
 
-    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile =  7000; //
+    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile =  13000; //
     //private static final String WORKLOAD_FILENAME = "workload/swf/KTH-SP2-1996-2.1-cln.swf.gz";
     //private static final String WORKLOAD_FILENAME = "workload/swf/HPC2N-2002-2.2-cln.swf.gz";     // 202871
     private static final String WORKLOAD_FILENAME = "workload/swf/NASA-iPSC-1993-3.1-cln.swf.gz";  // 18239
@@ -117,7 +117,9 @@ public class EvaluateSingleChromosome {
 
     ArrayList<List<Cloudlet>> heuristicSpecificFinishedCloudletsList = new ArrayList<List<Cloudlet>>();
 
-    String n = "366412460300350202131202";
+    //String n = "366412460300350202131202";
+    String n = "551151451551654513651456";
+    //String n = "222222222222222222222222";
 
     Chromosome solutionCandidate;
 
@@ -127,45 +129,42 @@ public class EvaluateSingleChromosome {
 
     private EvaluateSingleChromosome() {
 
-        Log.setLevel(Level.INFO);
+        Log.setLevel(Level.OFF);
 
         solutionCandidate = convertToChromosome(n);
 
         heuristicIndex = 0;
 
         simulation = new CloudSim();
-
         datacenter0 = createDatacenter();
-
         broker0 = new MyBroker(simulation);
-
-        vmList = createVmsSpaceShared();
-
+        vmList = createVmsAndSubmit();
+        cloudletList = createWorkloadCloudletsAndSubmit();
         //cloudletList = createCloudlets();
-        cloudletList = createCloudletsFromWorkloadFile();
 
-        //broker0.setVmDestructionDelay(50);
 
-        considerSubmissionTimes(0);
+        //considerSubmissionTimes(0);
+        //broker0.submitVmList(vmList);
+        //broker0.submitCloudletList(cloudletList);
 
         simulation.addOnClockTickListener(this::pauseSimulation);
         simulation.addOnSimulationPauseListener(this::switchSchedulingHeuristics);
 
-        broker0.submitVmList(vmList);
-        broker0.submitCloudletList(cloudletList);
 
         solutionCandidate.getGeneList().forEach(gene -> System.out.print(gene.getSchedulingHeuristic()));
         schedulingHeuristic = solutionCandidate.getGeneList().get(heuristicIndex).getSchedulingHeuristic();
         System.out.println("\n\nHeuristic Switched to " + schedulingHeuristic);
-        broker0.selectSchedulingPolicy(schedulingHeuristic, vmList,cloudletList);
+        broker0.selectSchedulingPolicy(schedulingHeuristic, vmList, cloudletList);
 
 
         simulation.start();
 
-        printPerformanceMetrics(datacenter0,broker0);
+        printPerformanceMetrics(datacenter0, broker0);
+
+        }
 
 
-    }
+
 
     public Chromosome convertToChromosome(String n){
         ArrayList<Gene> newChromosome = new ArrayList<>();
@@ -230,49 +229,91 @@ public class EvaluateSingleChromosome {
         }
     }
 
+//    private Datacenter createDatacenter() {
+//        final List<Host> hostList = new ArrayList<>(HOSTS);
+//        for(int i = 0; i < HOSTS; i++) {
+//            Host host = createHost();
+//            host.setPowerModel(getPowerSpecs().get(i % 4));
+//            hostList.add(host);
+//        }
+//        return new DatacenterSimple(simulation, hostList);
+//    }
+//
+//    private Host createHost() {
+//        final List<Pe> peList = new ArrayList<>(HOST_PES);
+//        for (int i = 0; i < HOST_PES; i++) {
+//            peList.add(new PeSimple(HOST_MIPS));
+//        }
+//        Host h = new HostSimple(HOST_RAM, HOST_BW, HOST_STORAGE, peList);
+//        h.setVmScheduler(new VmSchedulerSpaceShared());
+//        h.enableUtilizationStats();
+//        return h;
+//    }
+
     private Datacenter createDatacenter() {
+        return new DatacenterSimple(simulation, createHosts());
+    }
+
+    private List<Host> createHosts() {
         final List<Host> hostList = new ArrayList<>(HOSTS);
-        for(int i = 0; i < HOSTS; i++) {
-            Host host = createHost();
-            host.setPowerModel(getPowerSpecs().get(i % 4));
-            hostList.add(host);
+        for(int h = 0; h < HOSTS; h++) {
+            final List<Pe> peList = new ArrayList<>(HOST_PES);
+            for (int p = 0; p < HOST_PES; p++) {
+                peList.add(new PeSimple(HOST_MIPS));
+            }
+            hostList.add(new HostSimple(HOST_RAM, HOST_BW, HOST_STORAGE, peList));
         }
-        return new DatacenterSimple(simulation, hostList);
+        hostList.forEach(host -> host.setVmScheduler(new VmSchedulerSpaceShared()));
+        hostList.forEach(host -> host.enableUtilizationStats());
+        return hostList;
     }
 
-    private Host createHost() {
-        final List<Pe> peList = new ArrayList<>(HOST_PES);
-        for (int i = 0; i < HOST_PES; i++) {
-            peList.add(new PeSimple(HOST_MIPS));
-        }
-        Host h = new HostSimple(HOST_RAM, HOST_BW, HOST_STORAGE, peList);
-        h.setVmScheduler(new VmSchedulerSpaceShared());
-        h.enableUtilizationStats();
-        return h;
-    }
+//    private List<Vm> createVmsSpaceShared() {
+//        final List<Vm> list = new ArrayList<>(VMS);
+//        for (int i = 0; i < VMS; i++) {
+//            VM_MIPS = VM_MIPSList.get(i % 4);
+//            final Vm vm = new VmSimple(VM_MIPS, VM_PES);
+//            vm.setRam(VM_RAM).setBw(VM_BW).setSize(VM_STORAGE);
+//            vm.setCloudletScheduler(new CloudletSchedulerSpaceShared());
+//            vm.enableUtilizationStats();
+//            list.add(vm);
+//        }
+//        return list;
+//    }
 
-    private List<Vm> createVmsSpaceShared() {
+
+//    private List<Vm> createVmsTimeShared() {
+//        final List<Vm> list = new ArrayList<>(VMS);
+//        for (int i = 0; i < VMS; i++) {
+//            VM_MIPS = VM_MIPSList.get(i % 4);
+//            final Vm vm = new VmSimple(VM_MIPS, VM_PES);
+//            vm.setRam(VM_RAM).setBw(VM_BW).setSize(VM_STORAGE);
+//            vm.setCloudletScheduler(new CloudletSchedulerTimeShared());
+//            list.add(vm);
+//        }
+//        return list;
+//    }
+
+    private List<Vm> createVmsAndSubmit() {
         final List<Vm> list = new ArrayList<>(VMS);
         for (int i = 0; i < VMS; i++) {
-            VM_MIPS = VM_MIPSList.get(i % 4);
-            final Vm vm = new VmSimple(VM_MIPS, VM_PES);
-            vm.setRam(VM_RAM).setBw(VM_BW).setSize(VM_STORAGE);
-            vm.setCloudletScheduler(new CloudletSchedulerSpaceShared());
-            vm.enableUtilizationStats();
-            list.add(vm);
+            list.add(new VmSimple(VM_MIPSList.get(i % 4), VM_PES));
         }
+        list.forEach(vm -> vm.setRam(VM_RAM).setBw(VM_BW).setSize(VM_STORAGE));
+        list.forEach(vm -> vm.setCloudletScheduler(new CloudletSchedulerSpaceShared()));
+        list.forEach(vm -> vm.enableUtilizationStats());
+        broker0.submitVmList(list);
         return list;
     }
 
-    private List<Vm> createVmsTimeShared() {
-        final List<Vm> list = new ArrayList<>(VMS);
-        for (int i = 0; i < VMS; i++) {
-            VM_MIPS = VM_MIPSList.get(i % 4);
-            final Vm vm = new VmSimple(VM_MIPS, VM_PES);
-            vm.setRam(VM_RAM).setBw(VM_BW).setSize(VM_STORAGE);
-            vm.setCloudletScheduler(new CloudletSchedulerTimeShared());
-            list.add(vm);
-        }
+    private List<Cloudlet> createWorkloadCloudletsAndSubmit() {
+        SwfWorkloadFileReader reader = SwfWorkloadFileReader.getInstance(WORKLOAD_FILENAME, 3);
+        reader.setMaxLinesToRead(maximumNumberOfCloudletsToCreateFromTheWorkloadFile);
+        List<Cloudlet> list = reader.generateWorkload();
+        //cloudletList.remove(cloudletList.get(3));
+        System.out.printf("# Created %12d Cloudlets for %n", list.size());
+        list.forEach(c->c.setSubmissionDelay(0));
+        broker0.submitCloudletList(list);
         return list;
     }
 
@@ -280,7 +321,6 @@ public class EvaluateSingleChromosome {
         SwfWorkloadFileReader reader = SwfWorkloadFileReader.getInstance(WORKLOAD_FILENAME, 3);
         reader.setMaxLinesToRead(maximumNumberOfCloudletsToCreateFromTheWorkloadFile);
         List<Cloudlet> list = reader.generateWorkload();
-        //this.cloudletList = reader.generateWorkload();
         System.out.printf("# Created %12d Cloudlets for %n", list.size());
         return list;
     }
@@ -296,23 +336,6 @@ public class EvaluateSingleChromosome {
         return list;
     }
 
-    private void totalHostMIPSCapacity(){
-        double totalHostMIPSCapacity = 0.0;
-        for (Host h: datacenter0.getHostList()
-        ) {
-            totalHostMIPSCapacity += h.getTotalMipsCapacity();
-        }
-        System.out.println("Total HOST MIPS capacity: "+totalHostMIPSCapacity);
-    }
-
-    private void totalVmMIPSCapacity(){
-        double totalVmMIPSCapacity = 0.0;
-        for (Vm v: broker0.getVmCreatedList()
-        ) {
-            totalVmMIPSCapacity += v.getTotalMipsCapacity();
-        }
-        System.out.println("Total VMs MIPS capacity: "+totalVmMIPSCapacity);
-    }
 
     private void considerSubmissionTimes(int n) {
 
