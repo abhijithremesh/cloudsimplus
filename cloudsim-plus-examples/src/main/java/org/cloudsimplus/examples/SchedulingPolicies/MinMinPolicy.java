@@ -1,12 +1,9 @@
-package org.cloudsimplus.examples.HybridModel;
+package org.cloudsimplus.examples.SchedulingPolicies;
 
 import org.cloudbus.cloudsim.cloudlets.Cloudlet;
 import org.cloudbus.cloudsim.vms.Vm;
-import org.cloudbus.cloudsim.vms.VmSimple;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
 
 public class MinMinPolicy {
 

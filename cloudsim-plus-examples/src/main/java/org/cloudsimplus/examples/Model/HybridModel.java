@@ -23,7 +23,6 @@
  */
 package org.cloudsimplus.examples.Model;
 
-import ch.qos.logback.classic.Level;
 import org.cloudbus.cloudsim.cloudlets.Cloudlet;
 import org.cloudbus.cloudsim.cloudlets.CloudletExecution;
 import org.cloudbus.cloudsim.cloudlets.CloudletSimple;
@@ -42,9 +41,8 @@ import org.cloudbus.cloudsim.util.SwfWorkloadFileReader;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelDynamic;
 import org.cloudbus.cloudsim.vms.Vm;
 import org.cloudbus.cloudsim.vms.VmSimple;
-import org.cloudsimplus.examples.HybridModel.MyBroker;
+import org.cloudsimplus.examples.SchedulingPolicies.MyBroker;
 import org.cloudsimplus.listeners.EventInfo;
-import org.cloudsimplus.util.Log;
 
 import java.util.*;
 

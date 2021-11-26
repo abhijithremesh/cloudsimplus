@@ -1,6 +1,5 @@
-package org.cloudsimplus.examples.HybridModel;
+package org.cloudsimplus.examples.SchedulingPolicies;
 
-import org.cloudbus.cloudsim.brokers.DatacenterBrokerFirstFit;
 import org.cloudbus.cloudsim.brokers.DatacenterBrokerSimple;
 import org.cloudbus.cloudsim.cloudlets.Cloudlet;
 import org.cloudbus.cloudsim.core.CloudSim;
@@ -75,12 +74,7 @@ public class MyBroker extends DatacenterBrokerSimple {
     }
 
 
-    public void Sufferage(List<Vm> vmList, List<Cloudlet> cloudletList){
 
-        SufferagePolicy s = new SufferagePolicy(this, vmList, cloudletList);
-        s.schedule();
-
-    }
 
     public void selectSchedulingPolicy(int schedulingHeuristic, List<Vm> vmList, List<Cloudlet> cloudletList){
         switch(schedulingHeuristic){
@@ -115,10 +109,6 @@ public class MyBroker extends DatacenterBrokerSimple {
             case 7:
                 System.out.println("Random");
                 this.Random(vmList, cloudletList);
-                break;
-            case 8:
-                System.out.println("Sufferage");
-                this.Sufferage(vmList, cloudletList);
                 break;
 
 

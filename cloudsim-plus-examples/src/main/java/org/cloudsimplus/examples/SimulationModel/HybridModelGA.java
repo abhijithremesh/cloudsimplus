@@ -26,23 +26,19 @@ package org.cloudsimplus.examples.SimulationModel;
 import ch.qos.logback.classic.Level;
 import org.cloudbus.cloudsim.cloudlets.Cloudlet;
 import org.cloudbus.cloudsim.cloudlets.CloudletExecution;
-import org.cloudbus.cloudsim.cloudlets.CloudletSimple;
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.datacenters.Datacenter;
 import org.cloudbus.cloudsim.datacenters.DatacenterSimple;
 import org.cloudbus.cloudsim.hosts.Host;
 import org.cloudbus.cloudsim.hosts.HostSimple;
-import org.cloudbus.cloudsim.power.models.PowerModelHostSpec;
 import org.cloudbus.cloudsim.resources.Pe;
 import org.cloudbus.cloudsim.resources.PeSimple;
 import org.cloudbus.cloudsim.schedulers.cloudlet.CloudletSchedulerSpaceShared;
-import org.cloudbus.cloudsim.schedulers.cloudlet.CloudletSchedulerTimeShared;
 import org.cloudbus.cloudsim.schedulers.vm.VmSchedulerSpaceShared;
 import org.cloudbus.cloudsim.util.SwfWorkloadFileReader;
-import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelDynamic;
 import org.cloudbus.cloudsim.vms.Vm;
 import org.cloudbus.cloudsim.vms.VmSimple;
-import org.cloudsimplus.examples.HybridModel.MyBroker;
+import org.cloudsimplus.examples.SchedulingPolicies.MyBroker;
 import org.cloudsimplus.listeners.EventInfo;
 import org.cloudsimplus.util.Log;
 
@@ -115,10 +111,8 @@ public class HybridModelGA {
 
     private HybridModelGA() {
 
-        exVariables.add(new ExperimentVariables(50,10,24,7,2,3,0.5,0.4, 0.50,0.50, 0.5));
-        //exVariables.add(new ExperimentVariables(50,10,24,5,2,3,0.5,0.4, 0.60,0.20, 0.20));
-        //exVariables.add(new ExperimentVariables(50,20,24,7,2,3,0.5,0.4, 0.80,0.10, 0.10));
-        //exVariables.add(new ExperimentVariables(50,20,24,5,2,3,0.5,0.4, 0.90,0.05, 0.05));
+        exVariables.add(new ExperimentVariables(50,10,24,7,2,3,0.5,0.4, 0.33,0.33, 0.33));
+
 
         for (ExperimentVariables ev: exVariables
              ) {
@@ -131,7 +125,7 @@ public class HybridModelGA {
 
                 System.out.println("******************************************** WorkloadNum: "+ws+" ******************************************************");
 
-                List<Integer> workloadSizes = Arrays.asList(13000,16000,18239);
+                List<Integer> workloadSizes = Arrays.asList(16000,16000,18239);
                 int workloadSize = workloadSizes.get(ws);
 
 
@@ -184,8 +178,8 @@ public class HybridModelGA {
                             gnew.printPerformanceMetrics(datacenter0, broker0);
 
                             gnew.computeMakespan(broker0);
-                            gnew.computeTotalWaitingTime(broker0);
-                            gnew.computeFlowTime(broker0);
+                            //gnew.computeTotalWaitingTime(broker0);
+                            //gnew.computeFlowTime(broker0);
 
 
                             cloudletList = null;
@@ -201,8 +195,8 @@ public class HybridModelGA {
                         }
 
 
-                        gnew.computeFitness(chromosomeList, ev.w1, ev.w2, ev.w3);
-                        //gnew.computeFitness(chromosomeList);
+                        //gnew.computeFitness(chromosomeList, ev.w1, ev.w2, ev.w3);
+                        gnew.computeFitness(chromosomeList);
 
                         gnew.generationBest();
 

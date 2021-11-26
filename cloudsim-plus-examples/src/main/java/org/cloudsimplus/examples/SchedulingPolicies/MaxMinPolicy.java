@@ -1,10 +1,9 @@
-package org.cloudsimplus.examples.HybridModel;
+package org.cloudsimplus.examples.SchedulingPolicies;
 
 import org.cloudbus.cloudsim.cloudlets.Cloudlet;
 import org.cloudbus.cloudsim.vms.Vm;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class MaxMinPolicy {

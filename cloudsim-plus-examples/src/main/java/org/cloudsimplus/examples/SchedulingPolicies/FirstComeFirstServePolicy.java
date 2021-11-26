@@ -1,14 +1,11 @@
-package org.cloudsimplus.examples.HybridModel;
+package org.cloudsimplus.examples.SchedulingPolicies;
 
 import org.cloudbus.cloudsim.cloudlets.Cloudlet;
-import org.cloudbus.cloudsim.core.events.SimEvent;
-import org.cloudbus.cloudsim.schedulers.cloudlet.CloudletSchedulerSpaceShared;
 import org.cloudbus.cloudsim.vms.Vm;
 
 import java.util.Comparator;
 import java.util.List;
 
-import static java.util.Comparator.comparingDouble;
 import static java.util.Comparator.comparingLong;
 
 public class FirstComeFirstServePolicy {

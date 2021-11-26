@@ -37,13 +37,12 @@ import org.cloudbus.cloudsim.power.models.PowerModelHostSpec;
 import org.cloudbus.cloudsim.resources.Pe;
 import org.cloudbus.cloudsim.resources.PeSimple;
 import org.cloudbus.cloudsim.schedulers.cloudlet.CloudletSchedulerSpaceShared;
-import org.cloudbus.cloudsim.schedulers.cloudlet.CloudletSchedulerTimeShared;
 import org.cloudbus.cloudsim.schedulers.vm.VmSchedulerSpaceShared;
 import org.cloudbus.cloudsim.util.SwfWorkloadFileReader;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelDynamic;
 import org.cloudbus.cloudsim.vms.Vm;
 import org.cloudbus.cloudsim.vms.VmSimple;
-import org.cloudsimplus.examples.HybridModel.MyBroker;
+import org.cloudsimplus.examples.SchedulingPolicies.MyBroker;
 import org.cloudsimplus.listeners.EventInfo;
 import org.cloudsimplus.util.Log;
 
@@ -91,7 +90,7 @@ public class EvaluateSingleChromosome {
     private static final int CLOUDLET_LENGTH = 10_000;
 
 
-    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile =  13000; //
+    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile =  16000; //
     //private static final String WORKLOAD_FILENAME = "workload/swf/KTH-SP2-1996-2.1-cln.swf.gz";
     //private static final String WORKLOAD_FILENAME = "workload/swf/HPC2N-2002-2.2-cln.swf.gz";     // 202871
     private static final String WORKLOAD_FILENAME = "workload/swf/NASA-iPSC-1993-3.1-cln.swf.gz";  // 18239
@@ -117,9 +116,8 @@ public class EvaluateSingleChromosome {
 
     ArrayList<List<Cloudlet>> heuristicSpecificFinishedCloudletsList = new ArrayList<List<Cloudlet>>();
 
-    //String n = "366412460300350202131202";
-    String n = "551151451551654513651456";
-    //String n = "222222222222222222222222";
+
+    String n = "353015313551063254261252";
 
     Chromosome solutionCandidate;
 
@@ -135,17 +133,26 @@ public class EvaluateSingleChromosome {
 
         heuristicIndex = 0;
 
+
+//        simulation = new CloudSim();
+//        datacenter0 = createDatacenter();
+//        broker0 = new MyBroker(simulation);
+//        vmList = createVmsSpaceShared();
+//        cloudletList = createCloudletsFromWorkloadFile(workloadSize);
+//        cloudletList = createCloudlets();
+//        cloudletList = new ArrayList<>();
+//        cloudletList.addAll(workload);
+//        considerSubmissionTimes(0);
+//        broker0.submitVmList(vmList);
+//        broker0.submitCloudletList(cloudletList);
+
         simulation = new CloudSim();
         datacenter0 = createDatacenter();
         broker0 = new MyBroker(simulation);
         vmList = createVmsAndSubmit();
         cloudletList = createWorkloadCloudletsAndSubmit();
-        //cloudletList = createCloudlets();
 
 
-        //considerSubmissionTimes(0);
-        //broker0.submitVmList(vmList);
-        //broker0.submitCloudletList(cloudletList);
 
         simulation.addOnClockTickListener(this::pauseSimulation);
         simulation.addOnSimulationPauseListener(this::switchSchedulingHeuristics);

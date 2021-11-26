@@ -1,4 +1,4 @@
-package org.cloudsimplus.examples.HybridModel;
+package org.cloudsimplus.examples.SchedulingPolicies;
 
 import org.cloudbus.cloudsim.cloudlets.Cloudlet;
 import org.cloudbus.cloudsim.vms.Vm;

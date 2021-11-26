@@ -3,7 +3,7 @@ package org.cloudsimplus.examples.SimulationModel;
 import org.cloudbus.cloudsim.brokers.DatacenterBroker;
 import org.cloudbus.cloudsim.cloudlets.Cloudlet;
 import org.cloudbus.cloudsim.datacenters.Datacenter;
-import org.cloudsimplus.examples.HybridModel.MyBroker;
+import org.cloudsimplus.examples.SchedulingPolicies.MyBroker;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -87,7 +87,7 @@ public class GA {
      */
 
 
-
+/*
     public void computeFitness(List<Chromosome> chromosomeList, double w1, double w2, double w3){
 
         this. chromosomeList = chromosomeList;
@@ -122,17 +122,19 @@ public class GA {
     }
 
 
-//    public void computeFitness(List<Chromosome> chromosomeList){
-//        this. chromosomeList = chromosomeList;
-//        for (int i = 0; i < chromosomeList.size(); i++){
-//            //this.fitnessList.add(makespanList.get(i));
-//            //this.fitnessList.add(totalWaitingTimeList.get(i));
-//            //this.fitnessList.add(flowTimeList.get(i));
-//        }
-//        System.out.println("chromosomeList: ");
-//        printChromosomes(chromosomeList);
-//        System.out.println("\nfitnessList: "+fitnessList);
-//    }
+ */
+
+    public void computeFitness(List<Chromosome> chromosomeList){
+        this. chromosomeList = chromosomeList;
+        for (int i = 0; i < chromosomeList.size(); i++){
+            this.fitnessList.add(makespanList.get(i));
+            //this.fitnessList.add(totalWaitingTimeList.get(i));
+            //this.fitnessList.add(flowTimeList.get(i));
+        }
+        System.out.println("chromosomeList: ");
+        printChromosomes(chromosomeList);
+        System.out.println("\nfitnessList: "+fitnessList);
+    }
 
 
     public void elitismSelection(int eliteCount){
