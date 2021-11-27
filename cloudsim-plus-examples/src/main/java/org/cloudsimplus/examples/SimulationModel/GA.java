@@ -87,12 +87,12 @@ public class GA {
      */
 
 
-/*
+
     public void computeFitness(List<Chromosome> chromosomeList, double w1, double w2, double w3){
 
         this. chromosomeList = chromosomeList;
 
-        this.makespanList = this.makespanList.stream().map(f->((1127.02-f)/(1127.02-18.26))*100).collect(Collectors.toList());
+        //this.makespanList = this.makespanList.stream().map(f->((1127.02-f)/(1127.02-18.26))*100).collect(Collectors.toList());
         this.flowTimeList = this.flowTimeList.stream().map(f->((1130793.77-f)/(1130793.77-3495.38))*100).collect(Collectors.toList());
         this.totalWaitingTimeList = this.totalWaitingTimeList.stream().map(f->((1107153.9-f)/(1107153.9-2471.02))*100).collect(Collectors.toList());
         //this.degreeOfImbalanceList = this.degreeOfImbalanceList.stream().map(f->(2.49-f)/(2.49-0.35)).collect(Collectors.toList());
@@ -101,17 +101,17 @@ public class GA {
         //this.makespanList = scalingMethodFour(this.makespanList);
         //this.degreeOfImbalanceList = scalingMethodFour(this.degreeOfImbalanceList);
 
-        System.out.println("makespanList: "+this.makespanList);
+        //System.out.println("makespanList: "+this.makespanList);
         System.out.println("flowTimeList: "+this.flowTimeList);
         System.out.println("totalWaitingTimeList: "+this.totalWaitingTimeList);
         //System.out.println("degreeOfImbalanceList: "+this.degreeOfImbalanceList);
 
         for (int i = 0; i < chromosomeList.size(); i++){
-            //double fitness = w1 * totalWaitingTimeList.get(i) + w2 * flowTimeList.get(i);
+            double fitness = w1 * totalWaitingTimeList.get(i) + w2 * flowTimeList.get(i);
             //double fitness = w1 * makespanList.get(i) + w2 * degreeOfImbalanceList.get(i);
             //double fitness = w1 * makespanList.get(i) + w2 * flowTimeList.get(i);
             //double fitness = w1 * makespanList.get(i) + w2 * totalWaitingTimeList.get(i);
-            double fitness = w1 * makespanList.get(i) + w2 * totalWaitingTimeList.get(i) + w3 *  flowTimeList.get(i);
+            //double fitness = w1 * makespanList.get(i) + w2 * totalWaitingTimeList.get(i) + w3 *  flowTimeList.get(i);
             this.fitnessList.add(fitness);
         }
 
@@ -122,19 +122,19 @@ public class GA {
     }
 
 
- */
 
-    public void computeFitness(List<Chromosome> chromosomeList){
-        this. chromosomeList = chromosomeList;
-        for (int i = 0; i < chromosomeList.size(); i++){
-            this.fitnessList.add(makespanList.get(i));
-            //this.fitnessList.add(totalWaitingTimeList.get(i));
-            //this.fitnessList.add(flowTimeList.get(i));
-        }
-        System.out.println("chromosomeList: ");
-        printChromosomes(chromosomeList);
-        System.out.println("\nfitnessList: "+fitnessList);
-    }
+
+//    public void computeFitness(List<Chromosome> chromosomeList){
+//        this. chromosomeList = chromosomeList;
+//        for (int i = 0; i < chromosomeList.size(); i++){
+//            this.fitnessList.add(makespanList.get(i));
+//            //this.fitnessList.add(totalWaitingTimeList.get(i));
+//            //this.fitnessList.add(flowTimeList.get(i));
+//        }
+//        System.out.println("chromosomeList: ");
+//        printChromosomes(chromosomeList);
+//        System.out.println("\nfitnessList: "+fitnessList);
+//    }
 
 
     public void elitismSelection(int eliteCount){
@@ -451,8 +451,11 @@ public class GA {
             System.out.print(" ");
         }
         System.out.println();
+    }
 
-
+    public void clearGenerationAfterOptimization(){
+        generationBestFitnessValueList.clear();
+        generationBestChromosomeList.clear();
     }
 
     public void printPerformanceMetrics(Datacenter datacenter, DatacenterBroker broker){

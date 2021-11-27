@@ -111,7 +111,7 @@ public class HybridModelGA {
 
     private HybridModelGA() {
 
-        exVariables.add(new ExperimentVariables(50,10,24,7,2,3,0.5,0.4, 0.33,0.33, 0.33));
+        exVariables.add(new ExperimentVariables(50,10,24,7,2,3,0.5,0.4, 0.5,0.5, 0.0));
 
 
         for (ExperimentVariables ev: exVariables
@@ -121,15 +121,15 @@ public class HybridModelGA {
 
             Log.setLevel(Level.OFF);
 
-            for (int ws = 0; ws < 1; ws++) {
+            for (int ws = 0; ws < 4; ws++) {
 
                 System.out.println("******************************************** WorkloadNum: "+ws+" ******************************************************");
 
-                List<Integer> workloadSizes = Arrays.asList(16000,16000,18239);
+                List<Integer> workloadSizes = Arrays.asList(1000,4000,7000,10000);
                 int workloadSize = workloadSizes.get(ws);
 
 
-                for (int opt = 0; opt < 1; opt++) {
+                for (int opt = 0; opt < 10; opt++) {
 
                     System.out.println("******************************************** Optimization: "+opt+" ******************************************************");
 
@@ -177,9 +177,9 @@ public class HybridModelGA {
 
                             gnew.printPerformanceMetrics(datacenter0, broker0);
 
-                            gnew.computeMakespan(broker0);
-                            //gnew.computeTotalWaitingTime(broker0);
-                            //gnew.computeFlowTime(broker0);
+                            //gnew.computeMakespan(broker0);
+                            gnew.computeTotalWaitingTime(broker0);
+                            gnew.computeFlowTime(broker0);
 
 
                             cloudletList = null;
@@ -195,8 +195,8 @@ public class HybridModelGA {
                         }
 
 
-                        //gnew.computeFitness(chromosomeList, ev.w1, ev.w2, ev.w3);
-                        gnew.computeFitness(chromosomeList);
+                        gnew.computeFitness(chromosomeList, ev.w1, ev.w2, ev.w3);
+                        //gnew.computeFitness(chromosomeList);
 
                         gnew.generationBest();
 
@@ -209,6 +209,8 @@ public class HybridModelGA {
 
 
                     }
+
+                    gnew.clearGenerationAfterOptimization();
 
                 }
 
