@@ -85,10 +85,10 @@ public class HybridModelGA {
     private static final int CLOUDLETS = 13000;
     private static final int CLOUDLET_PES = 10;
     private static final int CLOUDLET_LENGTH = 1000;
-//    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile =  13000; // Integer.MAX_VALUE
-    //private static final String WORKLOAD_FILENAME = "workload/swf/KTH-SP2-1996-2.1-cln.swf.gz";
+    //private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile =  13000; // Integer.MAX_VALUE
+    private static final String WORKLOAD_FILENAME = "workload/swf/KTH-SP2-1996-2.1-cln.swf.gz";
     //private static final String WORKLOAD_FILENAME = "workload/swf/HPC2N-2002-2.2-cln.swf.gz";     // 202871
-    private static final String WORKLOAD_FILENAME = "workload/swf/NASA-iPSC-1993-3.1-cln.swf.gz";  // 18239
+    //private static final String WORKLOAD_FILENAME = "workload/swf/NASA-iPSC-1993-3.1-cln.swf.gz";  // 18239
 
 
     private CloudSim simulation;
@@ -113,7 +113,6 @@ public class HybridModelGA {
 
         exVariables.add(new ExperimentVariables(50,10,24,7,2,3,0.5,0.4, 0.5,0.5, 0.0));
 
-
         for (ExperimentVariables ev: exVariables
              ) {
 
@@ -121,15 +120,14 @@ public class HybridModelGA {
 
             Log.setLevel(Level.OFF);
 
-            for (int ws = 0; ws < 4; ws++) {
+            for (int ws = 0; ws < 1; ws++) {
 
                 System.out.println("******************************************** WorkloadNum: "+ws+" ******************************************************");
 
-                List<Integer> workloadSizes = Arrays.asList(1000,4000,7000,10000);
+                List<Integer> workloadSizes = Arrays.asList(28476);
                 int workloadSize = workloadSizes.get(ws);
 
-
-                for (int opt = 0; opt < 10; opt++) {
+                for (int opt = 0; opt < 1; opt++) {
 
                     System.out.println("******************************************** Optimization: "+opt+" ******************************************************");
 
@@ -177,8 +175,8 @@ public class HybridModelGA {
 
                             gnew.printPerformanceMetrics(datacenter0, broker0);
 
-                            //gnew.computeMakespan(broker0);
-                            gnew.computeTotalWaitingTime(broker0);
+                            gnew.computeMakespan(broker0);
+                            //gnew.computeTotalWaitingTime(broker0);
                             gnew.computeFlowTime(broker0);
 
 

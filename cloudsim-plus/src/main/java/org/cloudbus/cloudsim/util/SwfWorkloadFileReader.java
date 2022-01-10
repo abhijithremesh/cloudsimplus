@@ -8,6 +8,7 @@
 package org.cloudbus.cloudsim.util;
 
 import org.cloudbus.cloudsim.cloudlets.Cloudlet;
+import org.cloudbus.cloudsim.cloudlets.CloudletDeadline;
 import org.cloudbus.cloudsim.cloudlets.CloudletSimple;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModel;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelDynamic;
@@ -126,6 +127,9 @@ public final class SwfWorkloadFileReader extends TraceReaderAbstract {
      */
     private Predicate<Cloudlet> predicate;
 
+
+    private int deadline;
+
     /**
      * Gets a {@link SwfWorkloadFileReader} instance from a workload file
      * inside the <b>application's resource directory</b>.
@@ -206,6 +210,15 @@ public final class SwfWorkloadFileReader extends TraceReaderAbstract {
         return cloudlets;
     }
 
+    public List<Cloudlet> generateWorkload(int deadline) {
+        if (cloudlets.isEmpty()) {
+            this.deadline = deadline;
+            readFile(this::createCloudletFromTraceLine);
+        }
+
+        return cloudlets;
+    }
+
     /**
      * Defines a {@link Predicate} which indicates when a {@link Cloudlet}
      * must be created from a trace line read from the workload file.
@@ -247,7 +260,9 @@ public final class SwfWorkloadFileReader extends TraceReaderAbstract {
                                );
         final int numProc = Math.max(maxNumProc, 1);
 
-        final Cloudlet cloudlet = createCloudlet(id, runTime, numProc);
+        //final Cloudlet cloudlet = createCloudlet(id, runTime, numProc);
+        final Cloudlet cloudlet = createCloudletwithDeadline(id, runTime, numProc, deadline);
+
         final long submitTime = Long.parseLong(parsedLineArray[SUBMIT_TIME_INDEX].trim());
         cloudlet.setSubmissionDelay(submitTime);
 
@@ -270,15 +285,24 @@ public final class SwfWorkloadFileReader extends TraceReaderAbstract {
      * @return the created Cloudlet
      * @see #mips
      */
+
     private Cloudlet createCloudlet(final int id, final int runTime, final int numProc) {
-//        final int len = runTime * mips;
-//
-        //final UtilizationModel utilizationModel = new UtilizationModelFull();
-//        final UtilizationModel utilizationModelCpu = new UtilizationModelFull();
-//        final UtilizationModel utilizationModelRam = new UtilizationModelDynamic(0.000001);
-//        final UtilizationModel utilizationModelBw = new UtilizationModelDynamic(0.000001);
 
         return new CloudletSimple(id, runTime * mips, numProc)
+            .setFileSize(DataCloudTags.DEFAULT_MTU)
+            .setOutputSize(DataCloudTags.DEFAULT_MTU)
+            //.setUtilizationModel(utilizationModel);
+            .setUtilizationModelRam(new UtilizationModelDynamic(0.000001))
+            .setUtilizationModelBw(new UtilizationModelDynamic(0.000001))
+            .setUtilizationModelCpu(new UtilizationModelFull());
+
+
+    }
+
+    private Cloudlet createCloudletwithDeadline(final int id, final int runTime, final int numProc, int deadline) {
+
+        //return new CloudletSimple(id, runTime * mips, numProc)
+        return new CloudletDeadline(id, runTime * mips, numProc, deadline)
             .setFileSize(DataCloudTags.DEFAULT_MTU)
             .setOutputSize(DataCloudTags.DEFAULT_MTU)
             //.setUtilizationModel(utilizationModel);

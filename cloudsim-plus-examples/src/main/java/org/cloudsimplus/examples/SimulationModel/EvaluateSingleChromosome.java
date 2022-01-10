@@ -90,10 +90,10 @@ public class EvaluateSingleChromosome {
     private static final int CLOUDLET_LENGTH = 10_000;
 
 
-    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile =  16000; //
-    //private static final String WORKLOAD_FILENAME = "workload/swf/KTH-SP2-1996-2.1-cln.swf.gz";
+    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile =  28476; //
+    private static final String WORKLOAD_FILENAME = "workload/swf/KTH-SP2-1996-2.1-cln.swf.gz";
     //private static final String WORKLOAD_FILENAME = "workload/swf/HPC2N-2002-2.2-cln.swf.gz";     // 202871
-    private static final String WORKLOAD_FILENAME = "workload/swf/NASA-iPSC-1993-3.1-cln.swf.gz";  // 18239
+    //private static final String WORKLOAD_FILENAME = "workload/swf/NASA-iPSC-1993-3.1-cln.swf.gz";  // 18239
 
     private CloudSim simulation;
     private List<Vm> vmList;
@@ -116,8 +116,7 @@ public class EvaluateSingleChromosome {
 
     ArrayList<List<Cloudlet>> heuristicSpecificFinishedCloudletsList = new ArrayList<List<Cloudlet>>();
 
-
-    String n = "353015313551063254261252";
+    String n = "005550541421140502064144";
 
     Chromosome solutionCandidate;
 
@@ -132,7 +131,6 @@ public class EvaluateSingleChromosome {
         solutionCandidate = convertToChromosome(n);
 
         heuristicIndex = 0;
-
 
 //        simulation = new CloudSim();
 //        datacenter0 = createDatacenter();
@@ -151,7 +149,6 @@ public class EvaluateSingleChromosome {
         broker0 = new MyBroker(simulation);
         vmList = createVmsAndSubmit();
         cloudletList = createWorkloadCloudletsAndSubmit();
-
 
 
         simulation.addOnClockTickListener(this::pauseSimulation);

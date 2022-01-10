@@ -21,7 +21,7 @@
  *     You should have received a copy of the GNU General Public License
  *     along with CloudSim Plus. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.cloudsimplus.examples.SimulationModel;
+package org.cloudsimplus.examples.experiment;
 
 import ch.qos.logback.classic.Level;
 import org.cloudbus.cloudsim.brokers.DatacenterBroker;
@@ -44,6 +44,7 @@ import org.cloudsimplus.util.Log;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * A minimal but organized, structured and re-usable CloudSim Plus example
@@ -58,19 +59,20 @@ import java.util.List;
  */
 
 
-public class EvaluateSingleHeuristic {
-    private static final int  HOSTS = 20;
-    private static final int  HOST_PES = 128;
-    private static final int  HOST_RAM = 1024; //in Megabytes
+public class optimizeServers {
+
+    private static final int  HOSTS = 4;
+    private static final int  HOST_PES = 16;
+    private static final int  HOST_RAM = 512; //in Megabytes
     private static final long HOST_BW = 1000; //in Megabits/s
-    private static final long HOST_STORAGE = 100_000; //in Megabytes
+    private static final long HOST_STORAGE = 32_000; //in Megabytes
     private static final int  HOST_MIPS = 4000;
 
-    private static final int VMS = 20;
-    private static final int VM_PES = 128;
-    private static final int VM_RAM = 1024; //in Megabytes
+    private static final int VMS = 4;
+    private static final int VM_PES = 16;
+    private static final int VM_RAM = 512; //in Megabytes
     private static final long VM_BW = 1000; //in Megabits/s
-    private static final long VM_STORAGE = 100_000; //in Megabytes
+    private static final long VM_STORAGE = 32_000; //in Megabytes
     private static int VM_MIPS;
 
     List<Integer> VM_MIPSList = new ArrayList<Integer>() {{
@@ -84,10 +86,13 @@ public class EvaluateSingleHeuristic {
     private static final int CLOUDLET_PES = 10;
     private static final int CLOUDLET_LENGTH = 1000;
 
-    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile = 4000 ; // Integer.MAX_VALUE
+    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile = Integer.MAX_VALUE; //
     private static final String WORKLOAD_FILENAME = "workload/swf/KTH-SP2-1996-2.1-cln.swf.gz";
     //private static final String WORKLOAD_FILENAME = "workload/swf/HPC2N-2002-2.2-cln.swf.gz";     // 202871
     //private static final String WORKLOAD_FILENAME = "workload/swf/NASA-iPSC-1993-3.1-cln.swf.gz";  // 18239
+    //private static final String WORKLOAD_FILENAME = "workload/swf/CTC-SP2-1996-3.1-cln.swf.gz";  // 77222
+    //private static final String WORKLOAD_FILENAME = "workload/swf/SDSC-SP2-1998-4.2-cln.swf.gz"; // 59715
+
 
     private CloudSim simulation;
     private List<Vm> vmList;
@@ -96,35 +101,37 @@ public class EvaluateSingleHeuristic {
     MyBroker broker0;
 
     public static void main(String[] args) {
-        new EvaluateSingleHeuristic();
+        new optimizeServers();
     }
 
-    private EvaluateSingleHeuristic() {
+    private optimizeServers() {
 
-            Log.setLevel(Level.OFF);
+        Log.setLevel(Level.OFF);
 
-            simulation = new CloudSim();
-            datacenter0 = createDatacenter();
-            broker0 = new MyBroker(simulation);
-            vmList = createVmsAndSubmit();
-            cloudletList = createWorkloadCloudletsAndSubmit();
+        simulation = new CloudSim();
+        datacenter0 = createDatacenter();
+        broker0 = new MyBroker(simulation);
+        vmList = createVmsAndSubmit();
+        cloudletList = createWorkloadCloudletsAndSubmit(50);
 
-            //broker0.FirstComeFirstServe(vmList,cloudletList);
-            //broker0.Random(vmList, cloudletList);
-            //broker0.ShortestJobFirst(vmList, cloudletList);
-            //broker0.LongestJobFirst(vmList,cloudletList);
-            //broker0.ShortestCloudletFastestPE(vmList, cloudletList);
-            //broker0.LongestCloudletFastestPE(vmList, cloudletList);
-            //broker0.MinMin(vmList, cloudletList);
-            broker0.MaxMin(vmList, cloudletList);
+        broker0.FirstComeFirstServe(vmList,cloudletList);
+        //broker0.Random(vmList, cloudletList);
+        //broker0.ShortestJobFirst(vmList, cloudletList);
+        //broker0.LongestJobFirst(vmList,cloudletList);
+        //broker0.ShortestCloudletFastestPE(vmList, cloudletList);
+        //broker0.LongestCloudletFastestPE(vmList, cloudletList);
+        //broker0.MinMin(vmList, cloudletList);
+        //broker0.MaxMin(vmList, cloudletList);
 
-            simulation.start();
+        simulation.start();
+//        printPerformanceMetrics(datacenter0, broker0);
+//        new CloudletsTableBuilder(broker0.getCloudletFinishedList()).build();
 
-            //new CloudletsTableBuilder(broker0.getCloudletFinishedList()).build();
+        List<Cloudlet> breachedCloudlets = broker0.getCloudletFinishedList().stream().filter(c->c.getActualCpuTime() > 50).collect(Collectors.toList());
 
-            printPerformanceMetrics(datacenter0, broker0);
+        System.out.println(breachedCloudlets.size());
 
-        }
+    }
 
 
 //    private Datacenter createDatacenter() {
@@ -148,7 +155,7 @@ public class EvaluateSingleHeuristic {
 //        return h;
 //    }
 
-        private Datacenter createDatacenter() {
+    private Datacenter createDatacenter() {
         return new DatacenterSimple(simulation, createHosts());
     }
 
@@ -179,7 +186,7 @@ public class EvaluateSingleHeuristic {
 //        return list;
 //    }
 
-        private List<Vm> createVmsAndSubmit() {
+    private List<Vm> createVmsAndSubmit() {
         final List<Vm> list = new ArrayList<>(VMS);
         for (int i = 0; i < VMS; i++) {
             list.add(new VmSimple(VM_MIPSList.get(i % 4), VM_PES));
@@ -191,13 +198,12 @@ public class EvaluateSingleHeuristic {
         return list;
     }
 
-    private List<Cloudlet> createWorkloadCloudletsAndSubmit() {
-        SwfWorkloadFileReader reader = SwfWorkloadFileReader.getInstance(WORKLOAD_FILENAME, 3);
+
+    private List<Cloudlet> createWorkloadCloudletsAndSubmit(int deadline) {
+        SwfWorkloadFileReader reader = SwfWorkloadFileReader.getInstance(WORKLOAD_FILENAME, 1);
         reader.setMaxLinesToRead(maximumNumberOfCloudletsToCreateFromTheWorkloadFile);
-        List<Cloudlet> list = reader.generateWorkload();
-        //cloudletList.remove(cloudletList.get(3));
+        List<Cloudlet> list = reader.generateWorkload(deadline);
         System.out.printf("# Created %12d Cloudlets for %n", list.size());
-        list.forEach(c->c.setSubmissionDelay(0));
         broker0.submitCloudletList(list);
         return list;
     }
@@ -286,7 +292,7 @@ public class EvaluateSingleHeuristic {
 
         double flowTime = 0.0;
         for (Cloudlet c : broker.getCloudletFinishedList()
-             ) {
+        ) {
             flowTime += c.getWaitingTime() + c.getActualCpuTime() + c.getSubmissionDelay();
         }
         System.out.println("flowTime: "+roundDecimals(flowTime));
