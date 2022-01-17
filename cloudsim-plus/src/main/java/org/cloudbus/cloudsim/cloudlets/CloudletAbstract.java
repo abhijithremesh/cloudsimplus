@@ -112,7 +112,7 @@ public abstract class CloudletAbstract extends CustomerEntityAbstract implements
     /** @see #getSubmissionDelay() */
     private double submissionDelay;
 
-    private int deadline;
+    private int deliveryTime;
 
     /**
      * Creates a Cloudlet with no priority or id. The id is defined when the Cloudlet is submitted to
@@ -190,7 +190,6 @@ public abstract class CloudletAbstract extends CustomerEntityAbstract implements
         this.setSubmissionDelay(0.0);
         this.setAccumulatedBwCost(0.0);
         this.setCostPerBw(0.0);
-
         this.reset();
 
         setUtilizationModelCpu(new UtilizationModelFull());
@@ -813,20 +812,20 @@ public abstract class CloudletAbstract extends CustomerEntityAbstract implements
         if (submissionDelay < 0) {
             return;
         }
-
         this.submissionDelay = submissionDelay;
     }
 
-//    @Override
-//    public double getDeadline() {
-//        return this.deadline;
-//    }
-//
-//    @Override
-//    public final void setDeadline(final int deadline) {
-//        this.deadline = deadline;
-//    }
+    @Override
+    public Cloudlet setDeliveryTime(int lowLim, int uppLim) {
+        this.deliveryTime = ((int)this.submissionDelay + (int) this.getLength() + (new Random().nextInt(uppLim-lowLim)+ lowLim));
+        //this.deliveryTime = (int) this.getLength()  + new Random().nextInt(uppLim-lowLim)+ lowLim;
+        return this;
+    }
 
+    @Override
+    public int getDeliveryTime() {
+        return this.deliveryTime;
+    }
 
 
     @Override

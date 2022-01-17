@@ -34,13 +34,17 @@ import org.cloudbus.cloudsim.hosts.HostSimple;
 import org.cloudbus.cloudsim.resources.Pe;
 import org.cloudbus.cloudsim.resources.PeSimple;
 import org.cloudbus.cloudsim.schedulers.cloudlet.CloudletSchedulerSpaceShared;
+import org.cloudbus.cloudsim.schedulers.cloudlet.CloudletSchedulerTimeShared;
 import org.cloudbus.cloudsim.schedulers.vm.VmSchedulerSpaceShared;
 import org.cloudbus.cloudsim.util.SwfWorkloadFileReader;
 import org.cloudbus.cloudsim.vms.Vm;
 import org.cloudbus.cloudsim.vms.VmSimple;
+import org.cloudsimplus.builders.tables.CloudletsTableBuilder;
 import org.cloudsimplus.examples.SchedulingPolicies.MyBroker;
+import org.cloudsimplus.examples.SimulationModel.ExperimentVariables;
 import org.cloudsimplus.util.Log;
 
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -61,38 +65,57 @@ import java.util.stream.Collectors;
 
 public class optimizeServers {
 
-    private static final int  HOSTS = 4;
-    private static final int  HOST_PES = 16;
-    private static final int  HOST_RAM = 512; //in Megabytes
-    private static final long HOST_BW = 1000; //in Megabits/s
-    private static final long HOST_STORAGE = 32_000; //in Megabytes
-    private static final int  HOST_MIPS = 4000;
+//    /*************************************************/
+//    private static final int  HOSTS = 5;
+//    private static final int  HOST_PES = 4;
+//    private static final int  HOST_RAM = 64_000_000; //in Megabytes
+//    private static final long HOST_BW = 1000000; //in Megabits/s
+//    private static final long HOST_STORAGE = 56_000_000; //in Megabytes
+//    private static final int  HOST_MIPS = 1000;
+//
+//    private static final int VMS = 5;
+//    private static final int VM_PES = 4;
+//    private static final int VM_RAM = 64_000_000; //in Megabytes
+//    private static final long VM_BW = 1000; //in Megabits/s
+//    private static final long VM_STORAGE = 56_000_000; //in Megabytes
+//    /**************************************************************/
 
-    private static final int VMS = 4;
-    private static final int VM_PES = 16;
-    private static final int VM_RAM = 512; //in Megabytes
+    /*************************************************/
+    private static final int  HOSTS = 5;
+    private static final int  HOST_PES = 128;
+    private static final int  HOST_RAM = 8000; //in Megabytes
+    private static final long HOST_BW = 1000000; //in Megabits/s
+    private static final long HOST_STORAGE = 1000_000; //in Megabytes
+    private static final int  HOST_MIPS = 1000;
+
+    private static final int VMS = 5;
+    private static final int VM_PES = 128;
+    private static final int VM_RAM = 4000; //in Megabytes
     private static final long VM_BW = 1000; //in Megabits/s
     private static final long VM_STORAGE = 32_000; //in Megabytes
-    private static int VM_MIPS;
+    /**************************************************************/
 
+
+
+    private static int VM_MIPS;
     List<Integer> VM_MIPSList = new ArrayList<Integer>() {{
         add(1000);
-        add(2000);
-        add(3000);
-        add(4000);
+        add(1000);
+        add(1000);
+        add(1000);
     } };
 
-    private static final int CLOUDLETS = 10000;
-    private static final int CLOUDLET_PES = 10;
-    private static final int CLOUDLET_LENGTH = 1000;
 
-    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile = Integer.MAX_VALUE; //
-    private static final String WORKLOAD_FILENAME = "workload/swf/KTH-SP2-1996-2.1-cln.swf.gz";
-    //private static final String WORKLOAD_FILENAME = "workload/swf/HPC2N-2002-2.2-cln.swf.gz";     // 202871
-    //private static final String WORKLOAD_FILENAME = "workload/swf/NASA-iPSC-1993-3.1-cln.swf.gz";  // 18239
+//    private static final int CLOUDLETS = 10000;
+//    private static final int CLOUDLET_PES = 10;
+//    private static final int CLOUDLET_LENGTH = 1000;
+
+    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile = Integer.MAX_VALUE ; // Integer.MAX_VALUE
+    private static final String WORKLOAD_FILENAME = "workload/swf/NASA-iPSC-1993-3.1-cln.swf.gz";  // 18239
     //private static final String WORKLOAD_FILENAME = "workload/swf/CTC-SP2-1996-3.1-cln.swf.gz";  // 77222
     //private static final String WORKLOAD_FILENAME = "workload/swf/SDSC-SP2-1998-4.2-cln.swf.gz"; // 59715
-
+    //private static final String WORKLOAD_FILENAME = "workload/swf/KTH-SP2-1996-2.1-cln.swf.gz"; // 28476
+    //private static final String WORKLOAD_FILENAME = "workload/swf/HPC2N-2002-2.2-cln.swf.gz";     // 202871
 
     private CloudSim simulation;
     private List<Vm> vmList;
@@ -106,13 +129,16 @@ public class optimizeServers {
 
     private optimizeServers() {
 
-        Log.setLevel(Level.OFF);
+        Log.setLevel(Level.INFO);
 
         simulation = new CloudSim();
         datacenter0 = createDatacenter();
         broker0 = new MyBroker(simulation);
-        vmList = createVmsAndSubmit();
-        cloudletList = createWorkloadCloudletsAndSubmit(50);
+//        vmList = createSpaceSharedVmsAndSubmit();
+        vmList = createTimeSharedVmsAndSubmit();
+        cloudletList = createWorkloadCloudletsAndSubmit();
+
+        cloudletList.forEach(c->c.setDeliveryTime(1*60*60,2*60*60));
 
         broker0.FirstComeFirstServe(vmList,cloudletList);
         //broker0.Random(vmList, cloudletList);
@@ -124,36 +150,32 @@ public class optimizeServers {
         //broker0.MaxMin(vmList, cloudletList);
 
         simulation.start();
-//        printPerformanceMetrics(datacenter0, broker0);
+
 //        new CloudletsTableBuilder(broker0.getCloudletFinishedList()).build();
 
-        List<Cloudlet> breachedCloudlets = broker0.getCloudletFinishedList().stream().filter(c->c.getActualCpuTime() > 50).collect(Collectors.toList());
+//        for (Cloudlet c: cloudletList
+//             ) {
+//            System.out.println("******************************************");
+//            System.out.println("submission delay: "+c.getSubmissionDelay());
+//            System.out.println("length: "+c.getLength());
+//            System.out.println("req_cores: "+c.getNumberOfPes());
+//            System.out.println("exe: "+c.getActualCpuTime());
+//            System.out.println("wait: "+c.getWaitingTime());
+//            System.out.println("delivery date: "+c.getDeliveryTime());
+//        }
 
-        System.out.println(breachedCloudlets.size());
+
+        List<Cloudlet> tardyCloudlets = broker0.getCloudletFinishedList().stream().filter(c-> (c.getActualCpuTime() + c.getWaitingTime()) > c.getDeliveryTime()).collect(Collectors.toList());
+
+        System.out.println("tardy Cloudlets: "+tardyCloudlets.size());
+
+        printPerformanceMetrics(datacenter0, broker0);
+
+//        new CloudletsTableBuilder(tardyCloudlets).build();
+
+        printTardiness(tardyCloudlets);
 
     }
-
-
-//    private Datacenter createDatacenter() {
-//        final List<Host> hostList = new ArrayList<>(HOSTS);
-//        for(int i = 0; i < HOSTS; i++) {
-//            Host host = createHost();
-//            host.setPowerModel(getPowerSpecs().get(i % 4));
-//            hostList.add(host);
-//        }
-//        return new DatacenterSimple(simulation, hostList);
-//    }
-//
-//    private Host createHost() {
-//        final List<Pe> peList = new ArrayList<>(HOST_PES);
-//        for (int i = 0; i < HOST_PES; i++) {
-//            peList.add(new PeSimple(HOST_MIPS));
-//        }
-//        Host h = new HostSimple(HOST_RAM, HOST_BW, HOST_STORAGE, peList);
-//        h.setVmScheduler(new VmSchedulerSpaceShared());
-//        h.enableUtilizationStats();
-//        return h;
-//    }
 
     private Datacenter createDatacenter() {
         return new DatacenterSimple(simulation, createHosts());
@@ -173,82 +195,44 @@ public class optimizeServers {
         return hostList;
     }
 
-//    private List<Vm> createVmsSpaceShared() {
-//        final List<Vm> list = new ArrayList<>(VMS);
-//        for (int i = 0; i < VMS; i++) {
-//            VM_MIPS = VM_MIPSList.get(i % 4);
-//            final Vm vm = new VmSimple(VM_MIPS, VM_PES);
-//            vm.setRam(VM_RAM).setBw(VM_BW).setSize(VM_STORAGE);
-//            vm.setCloudletScheduler(new CloudletSchedulerSpaceShared());
-//            vm.enableUtilizationStats();
-//            list.add(vm);
-//        }
-//        return list;
-//    }
+    private List<Vm> createTimeSharedVmsAndSubmit() {
+        final List<Vm> list = new ArrayList<>(VMS);
+        for (int i = 0; i < VMS; i++) {
+            list.add(new VmSimple(VM_MIPSList.get(i % 4), VM_PES));
+        }
+        list.forEach(vm -> vm.setRam(VM_RAM).setBw(VM_BW).setSize(VM_STORAGE));
+        list.forEach(vm -> vm.setCloudletScheduler(new CloudletSchedulerTimeShared()));
+        broker0.submitVmList(list);
+        return list;
+    }
 
-    private List<Vm> createVmsAndSubmit() {
+    private List<Vm> createSpaceSharedVmsAndSubmit() {
         final List<Vm> list = new ArrayList<>(VMS);
         for (int i = 0; i < VMS; i++) {
             list.add(new VmSimple(VM_MIPSList.get(i % 4), VM_PES));
         }
         list.forEach(vm -> vm.setRam(VM_RAM).setBw(VM_BW).setSize(VM_STORAGE));
         list.forEach(vm -> vm.setCloudletScheduler(new CloudletSchedulerSpaceShared()));
-        list.forEach(vm -> vm.enableUtilizationStats());
         broker0.submitVmList(list);
         return list;
     }
 
-
-    private List<Cloudlet> createWorkloadCloudletsAndSubmit(int deadline) {
+    private List<Cloudlet> createWorkloadCloudletsAndSubmit() {
         SwfWorkloadFileReader reader = SwfWorkloadFileReader.getInstance(WORKLOAD_FILENAME, 1);
         reader.setMaxLinesToRead(maximumNumberOfCloudletsToCreateFromTheWorkloadFile);
-        List<Cloudlet> list = reader.generateWorkload(deadline);
-        System.out.printf("# Created %12d Cloudlets for %n", list.size());
+        List<Cloudlet> list = reader.generateWorkload();
+        list.forEach(c->c.setLength(c.getLength()*10000));
+//        list.forEach(c->c.setNumberOfPes(128));
+//        list.forEach(c->c.setSubmissionDelay(0));
         broker0.submitCloudletList(list);
+        System.out.println("Created "+ list.size()+" Cloudlets and submitted to broker");
         return list;
     }
-
-
-//    private List<Cloudlet> createCloudletsFromWorkloadFile() {
-//        SwfWorkloadFileReader reader = SwfWorkloadFileReader.getInstance(WORKLOAD_FILENAME, 3);
-//        reader.setMaxLinesToRead(maximumNumberOfCloudletsToCreateFromTheWorkloadFile);
-//        List<Cloudlet> list = reader.generateWorkload();
-//        //cloudletList.remove(cloudletList.get(3));
-//        System.out.printf("# Created %12d Cloudlets for %n", list.size());
-//        return list;
-//    }
-
-//    private List<Cloudlet> createCloudlets() {
-//        final List<Cloudlet> list = new ArrayList<>(CLOUDLETS);
-//        final UtilizationModelDynamic utilizationModel = new UtilizationModelDynamic(0.5);
-//        for (int i = 0; i < CLOUDLETS; i++) {
-//            final Cloudlet cloudlet = new CloudletSimple(CLOUDLET_LENGTH, CLOUDLET_PES, utilizationModel);
-//            cloudlet.setSizes(1);
-//            list.add(cloudlet);
-//        }
-//        return list;
-//    }
-
-
-
-//    private void considerSubmissionTimes(int n) {
-//
-//        if (n == 1) {
-//            double minSubdelay = cloudletList.get(0).getSubmissionDelay();
-//            for (Cloudlet c : cloudletList
-//            ) {
-//                c.setSubmissionDelay(c.getSubmissionDelay() - minSubdelay);
-//            }
-//        } else if (n == 0){
-//            cloudletList.forEach(c->c.setSubmissionDelay(0));
-//        }
-//
-//    }
 
     public void printPerformanceMetrics(Datacenter datacenter, DatacenterBroker broker){
 
         double makespan = roundDecimals(broker.getCloudletFinishedList().get(broker.getCloudletFinishedList().size()-1).getFinishTime());
-        double throughput = roundDecimals(broker.getCloudletFinishedList().size()/makespan);
+        double throughput = broker.getCloudletFinishedList().size()/makespan;
 
         System.out.println("finishedCloudlets: "+broker.getCloudletFinishedList().size());
         System.out.println("makespan: "+makespan);
@@ -279,7 +263,6 @@ public class optimizeServers {
             vmExecTimeList.add(v.getTotalExecutionTime());
         }
         degreeOfImbalance = (Collections.max(vmExecTimeList) - Collections.min(vmExecTimeList))/vmExecTimeList.stream().mapToDouble(d -> d).average().orElse(0.0);
-        System.out.println("degreeOfImbalance: "+roundDecimals(degreeOfImbalance));
 
         double totalWaitingTime = 0.0;
         for (Cloudlet c: broker.getCloudletFinishedList()
@@ -314,7 +297,13 @@ public class optimizeServers {
         return  Math.round(value * 100.0) / 100.0;
     }
 
-
-
+    public void printTardiness(List<Cloudlet> cloudlets){
+        double totalTardiness = 0;
+        for (Cloudlet c : cloudlets
+             ) {
+            totalTardiness+=((c.getActualCpuTime()+c.getWaitingTime())-(c.getDeliveryTime()));
+        }
+        System.out.println("totalTardiness: "+totalTardiness);
+    }
 
 }

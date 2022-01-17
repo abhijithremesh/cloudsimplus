@@ -110,7 +110,7 @@ public class constrainedCloudlet {
         datacenter0 = createDatacenter();
         broker0 = new MyBroker(simulation);
         vmList = createVmsAndSubmit();
-        cloudletList = createWorkloadCloudletsAndSubmit(50);
+        cloudletList = createWorkloadCloudletsAndSubmit();
 
         broker0.FirstComeFirstServe(vmList,cloudletList);
         //broker0.Random(vmList, cloudletList);
@@ -125,7 +125,7 @@ public class constrainedCloudlet {
 //        printPerformanceMetrics(datacenter0, broker0);
 //        new CloudletsTableBuilder(broker0.getCloudletFinishedList()).build();
 
-        List<Cloudlet> breachedCloudlets = broker0.getCloudletFinishedList().stream().filter(c->c.getActualCpuTime() > 50).collect(Collectors.toList());
+        List<Cloudlet> breachedCloudlets = broker0.getCloudletFinishedList().stream().filter(c->c.getActualCpuTime() > 600).collect(Collectors.toList());
 
         System.out.println(breachedCloudlets.size());
 
@@ -197,10 +197,10 @@ public class constrainedCloudlet {
     }
 
 
-    private List<Cloudlet> createWorkloadCloudletsAndSubmit(int deadline) {
-        SwfWorkloadFileReader reader = SwfWorkloadFileReader.getInstance(WORKLOAD_FILENAME, 1);
+    private List<Cloudlet> createWorkloadCloudletsAndSubmit() {
+        SwfWorkloadFileReader reader = SwfWorkloadFileReader.getInstance(WORKLOAD_FILENAME, 1000);
         reader.setMaxLinesToRead(maximumNumberOfCloudletsToCreateFromTheWorkloadFile);
-        List<Cloudlet> list = reader.generateWorkload(deadline);
+        List<Cloudlet> list = reader.generateWorkload();
         System.out.printf("# Created %12d Cloudlets for %n", list.size());
         broker0.submitCloudletList(list);
         return list;

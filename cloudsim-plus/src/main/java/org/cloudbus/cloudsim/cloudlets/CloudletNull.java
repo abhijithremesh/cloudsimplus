@@ -45,6 +45,10 @@ final class CloudletNull implements Cloudlet {
     @Override public int getPriority() {
         return 0;
     }
+    @Override public int getDeliveryTime() {
+        return 0;
+    }
+    @Override public Cloudlet setDeliveryTime(int a, int b)  {return Cloudlet.NULL;}
     @Override public long getFileSize() {
         return 0L;
     }

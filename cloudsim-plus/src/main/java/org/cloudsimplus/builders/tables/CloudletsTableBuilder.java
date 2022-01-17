@@ -89,6 +89,12 @@ public class CloudletsTableBuilder extends TableBuilderAbstract<Cloudlet> {
 
         col = getTable().addColumn("ExecTime", SECONDS).setFormat(TIME_FORMAT);;
         addColumnDataFunction(col, cl -> roundTime(cl, cl.getActualCpuTime()));
+
+        col = getTable().addColumn("WaitTime", SECONDS).setFormat(TIME_FORMAT);;
+        addColumnDataFunction(col, cl -> roundTime(cl, cl.getWaitingTime()));
+
+        col = getTable().addColumn("DelTime", SECONDS).setFormat(TIME_FORMAT);;
+        addColumnDataFunction(col, cl -> roundTime(cl, cl.getDeliveryTime()));
     }
 
     /**
