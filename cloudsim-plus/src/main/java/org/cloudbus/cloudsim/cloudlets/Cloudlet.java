@@ -824,7 +824,7 @@ public interface Cloudlet extends UniquelyIdentifiable, Comparable<Cloudlet>, Cu
     Cloudlet setDeliveryTime(int lowLim, int uppLim);
 
 
-    int getDeliveryTime();
+    long getDeliveryTime();
 
     /**
      * Gets the {@link DatacenterBroker} that represents the owner of this Cloudlet.

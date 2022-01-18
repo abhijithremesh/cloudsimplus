@@ -45,9 +45,7 @@ import org.cloudsimplus.examples.SimulationModel.ExperimentVariables;
 import org.cloudsimplus.util.Log;
 
 import java.sql.SQLOutput;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -65,44 +63,44 @@ import java.util.stream.Collectors;
 
 public class optimizeServers {
 
+    /*************************************************/
+    private static final int  HOSTS = 1;
+    private static final int  HOST_PES = 128;
+    private static final int  HOST_RAM = 4_000_000; //in Megabytes
+    private static final long HOST_BW = 1000000; //in Megabits/s
+    private static final long HOST_STORAGE = 64_000_000; //in Megabytes
+    private static final int  HOST_MIPS = 4000;
+
+    private static final int VMS = 1;
+    private static final int VM_PES = 128;
+    private static final int VM_RAM = 4_000_000; //in Megabytes
+    private static final long VM_BW = 1000; //in Megabits/s
+    private static final long VM_STORAGE = 64_000_000; //in Megabytes
+    /**************************************************************/
+
 //    /*************************************************/
 //    private static final int  HOSTS = 5;
 //    private static final int  HOST_PES = 4;
-//    private static final int  HOST_RAM = 64_000_000; //in Megabytes
+//    private static final int  HOST_RAM = 64_000; //in Megabytes
 //    private static final long HOST_BW = 1000000; //in Megabits/s
 //    private static final long HOST_STORAGE = 56_000_000; //in Megabytes
-//    private static final int  HOST_MIPS = 1000;
+//    private static final int  HOST_MIPS = 4000;
 //
 //    private static final int VMS = 5;
 //    private static final int VM_PES = 4;
-//    private static final int VM_RAM = 64_000_000; //in Megabytes
+//    private static final int VM_RAM = 64_000; //in Megabytes
 //    private static final long VM_BW = 1000; //in Megabits/s
 //    private static final long VM_STORAGE = 56_000_000; //in Megabytes
 //    /**************************************************************/
-
-    /*************************************************/
-    private static final int  HOSTS = 5;
-    private static final int  HOST_PES = 128;
-    private static final int  HOST_RAM = 8000; //in Megabytes
-    private static final long HOST_BW = 1000000; //in Megabits/s
-    private static final long HOST_STORAGE = 1000_000; //in Megabytes
-    private static final int  HOST_MIPS = 1000;
-
-    private static final int VMS = 5;
-    private static final int VM_PES = 128;
-    private static final int VM_RAM = 4000; //in Megabytes
-    private static final long VM_BW = 1000; //in Megabits/s
-    private static final long VM_STORAGE = 32_000; //in Megabytes
-    /**************************************************************/
 
 
 
     private static int VM_MIPS;
     List<Integer> VM_MIPSList = new ArrayList<Integer>() {{
         add(1000);
-        add(1000);
-        add(1000);
-        add(1000);
+        add(2000);
+        add(3000);
+        add(4000);
     } };
 
 
@@ -110,12 +108,13 @@ public class optimizeServers {
 //    private static final int CLOUDLET_PES = 10;
 //    private static final int CLOUDLET_LENGTH = 1000;
 
-    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile = Integer.MAX_VALUE ; // Integer.MAX_VALUE
-    private static final String WORKLOAD_FILENAME = "workload/swf/NASA-iPSC-1993-3.1-cln.swf.gz";  // 18239
-    //private static final String WORKLOAD_FILENAME = "workload/swf/CTC-SP2-1996-3.1-cln.swf.gz";  // 77222
-    //private static final String WORKLOAD_FILENAME = "workload/swf/SDSC-SP2-1998-4.2-cln.swf.gz"; // 59715
-    //private static final String WORKLOAD_FILENAME = "workload/swf/KTH-SP2-1996-2.1-cln.swf.gz"; // 28476
-    //private static final String WORKLOAD_FILENAME = "workload/swf/HPC2N-2002-2.2-cln.swf.gz";     // 202871
+    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile = 20 ; // Integer.MAX_VALUE
+//    private static final String WORKLOAD_FILENAME = "workload/swf/NASA-iPSC-1993-3.1-cln.swf.gz";  // 18239
+//    private static final String WORKLOAD_FILENAME = "workload/swf/CTC-SP2-1996-3.1-cln.swf.gz";  // 77222
+//    private static final String WORKLOAD_FILENAME = "workload/swf/SDSC-SP2-1998-4.2-cln.swf.gz"; // 59715
+    private static final String WORKLOAD_FILENAME = "workload/swf/KTH-SP2-1996-2.1-cln.swf.gz"; // 28476
+//    private static final String WORKLOAD_FILENAME = "workload/swf/HPC2N-2002-2.2-cln.swf.gz";     // 202871
+    private List<String> WORKLOAD_FILENAME_LIST = Arrays.asList("workload/swf/NASA-iPSC-1993-3.1-cln.swf.gz", "workload/swf/CTC-SP2-1996-3.1-cln.swf.gz", "workload/swf/SDSC-SP2-1998-4.2-cln.swf.gz" );
 
     private CloudSim simulation;
     private List<Vm> vmList;
@@ -134,11 +133,12 @@ public class optimizeServers {
         simulation = new CloudSim();
         datacenter0 = createDatacenter();
         broker0 = new MyBroker(simulation);
-//        vmList = createSpaceSharedVmsAndSubmit();
-        vmList = createTimeSharedVmsAndSubmit();
+        vmList = createSpaceSharedVmsAndSubmit();
+//        vmList = createTimeSharedVmsAndSubmit();
         cloudletList = createWorkloadCloudletsAndSubmit();
+//        cloudletList = createSeveralWorkloadCloudletsAndSubmit();
 
-        cloudletList.forEach(c->c.setDeliveryTime(1*60*60,2*60*60));
+        cloudletList.forEach(c->c.setDeliveryTime(1*60*60, 2*60*60));
 
         broker0.FirstComeFirstServe(vmList,cloudletList);
         //broker0.Random(vmList, cloudletList);
@@ -151,7 +151,7 @@ public class optimizeServers {
 
         simulation.start();
 
-//        new CloudletsTableBuilder(broker0.getCloudletFinishedList()).build();
+        new CloudletsTableBuilder(broker0.getCloudletFinishedList()).build();
 
 //        for (Cloudlet c: cloudletList
 //             ) {
@@ -171,7 +171,7 @@ public class optimizeServers {
 
         printPerformanceMetrics(datacenter0, broker0);
 
-//        new CloudletsTableBuilder(tardyCloudlets).build();
+        new CloudletsTableBuilder(tardyCloudlets).build();
 
         printTardiness(tardyCloudlets);
 
@@ -218,16 +218,37 @@ public class optimizeServers {
     }
 
     private List<Cloudlet> createWorkloadCloudletsAndSubmit() {
+
         SwfWorkloadFileReader reader = SwfWorkloadFileReader.getInstance(WORKLOAD_FILENAME, 1);
         reader.setMaxLinesToRead(maximumNumberOfCloudletsToCreateFromTheWorkloadFile);
         List<Cloudlet> list = reader.generateWorkload();
         list.forEach(c->c.setLength(c.getLength()*10000));
-//        list.forEach(c->c.setNumberOfPes(128));
+        list.forEach(c->c.setNumberOfPes(HOST_PES));
 //        list.forEach(c->c.setSubmissionDelay(0));
         broker0.submitCloudletList(list);
         System.out.println("Created "+ list.size()+" Cloudlets and submitted to broker");
         return list;
     }
+
+    private List<Cloudlet> createSeveralWorkloadCloudletsAndSubmit() {
+
+        List<Cloudlet> clist = new ArrayList<>();
+        for (String s: WORKLOAD_FILENAME_LIST
+             ) {
+            SwfWorkloadFileReader reader = SwfWorkloadFileReader.getInstance(s, 1);
+            reader.setMaxLinesToRead(maximumNumberOfCloudletsToCreateFromTheWorkloadFile);
+            List<Cloudlet> list = reader.generateWorkload();
+            clist.addAll(list);
+        }
+        clist.sort(Comparator.comparingDouble(Cloudlet::getSubmissionDelay));
+        clist.forEach(c->c.setLength(c.getLength()*1000));
+        clist.forEach(c->c.setNumberOfPes(HOST_PES));
+//        clist.forEach(c->c.setSubmissionDelay(0));
+        broker0.submitCloudletList(clist);
+        System.out.println("Created "+ clist.size()+" Cloudlets and submitted to broker");
+        return clist;
+    }
+
 
     public void printPerformanceMetrics(Datacenter datacenter, DatacenterBroker broker){
 
