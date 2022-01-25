@@ -64,18 +64,18 @@ import java.util.stream.Collectors;
 public class optimizeServers {
 
     /*************************************************/
-    private static final int  HOSTS = 1;
+    private static final int  HOSTS = 5;
     private static final int  HOST_PES = 128;
-    private static final int  HOST_RAM = 4_000_000; //in Megabytes
+    private static final int  HOST_RAM = 3_000_000; //in Megabytes
     private static final long HOST_BW = 1000000; //in Megabits/s
-    private static final long HOST_STORAGE = 64_000_000; //in Megabytes
+    private static final long HOST_STORAGE = 16_000_000; //in Megabytes
     private static final int  HOST_MIPS = 4000;
 
-    private static final int VMS = 1;
+    private static final int VMS = 5;
     private static final int VM_PES = 128;
-    private static final int VM_RAM = 4_000_000; //in Megabytes
+    private static final int VM_RAM = 3_000_000; //in Megabytes
     private static final long VM_BW = 1000; //in Megabits/s
-    private static final long VM_STORAGE = 64_000_000; //in Megabytes
+    private static final long VM_STORAGE = 16_000_000; //in Megabytes
     /**************************************************************/
 
 //    /*************************************************/
@@ -108,13 +108,29 @@ public class optimizeServers {
 //    private static final int CLOUDLET_PES = 10;
 //    private static final int CLOUDLET_LENGTH = 1000;
 
-    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile = 20 ; // Integer.MAX_VALUE
-//    private static final String WORKLOAD_FILENAME = "workload/swf/NASA-iPSC-1993-3.1-cln.swf.gz";  // 18239
+    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile = Integer.MAX_VALUE ; // Integer.MAX_VALUE
+    private static final String WORKLOAD_FILENAME = "workload/swf/NASA-iPSC-1993-3.1-cln.swf.gz";  // 18239
 //    private static final String WORKLOAD_FILENAME = "workload/swf/CTC-SP2-1996-3.1-cln.swf.gz";  // 77222
 //    private static final String WORKLOAD_FILENAME = "workload/swf/SDSC-SP2-1998-4.2-cln.swf.gz"; // 59715
-    private static final String WORKLOAD_FILENAME = "workload/swf/KTH-SP2-1996-2.1-cln.swf.gz"; // 28476
+//    private static final String WORKLOAD_FILENAME = "workload/swf/KTH-SP2-1996-2.1-cln.swf.gz"; // 28476
 //    private static final String WORKLOAD_FILENAME = "workload/swf/HPC2N-2002-2.2-cln.swf.gz";     // 202871
-    private List<String> WORKLOAD_FILENAME_LIST = Arrays.asList("workload/swf/NASA-iPSC-1993-3.1-cln.swf.gz", "workload/swf/CTC-SP2-1996-3.1-cln.swf.gz", "workload/swf/SDSC-SP2-1998-4.2-cln.swf.gz" );
+//    private static final String WORKLOAD_FILENAME = "workload/swf/CEA-Curie-2011-2.1-cln.swf.gz";     //
+//    private static final String WORKLOAD_FILENAME = "workload/swf/LANL-CM5-1994-4.1-cln.swf.gz";     //
+//    private static final String WORKLOAD_FILENAME = "workload/swf/LLNL-Atlas-2006-2.1-cln.swf.gz";     //
+//    private static final String WORKLOAD_FILENAME = "workload/swf/LLNL-Thunder-2007-1.1-cln.swf.gz";     //
+//    private static final String WORKLOAD_FILENAME = "workload/swf/OSC-Clust-2000-3.1-cln.swf.gz";     //
+//    private static final String WORKLOAD_FILENAME = "workload/swf/Sandia-Ross-2001-1.1-cln.swf.gz";     //
+//    private static final String WORKLOAD_FILENAME = "workload/swf/SDSC-BLUE-2000-4.2-cln.swf.gz";     //
+//    private static final String WORKLOAD_FILENAME = "workload/swf/SDSC-Par-1996-3.1-cln.swf.gz";     //
+
+
+
+
+    private List<String> WORKLOAD_FILENAME_LIST = Arrays.asList("workload/swf/NASA-iPSC-1993-3.1-cln.swf.gz", "workload/swf/CTC-SP2-1996-3.1-cln.swf.gz", "workload/swf/SDSC-SP2-1998-4.2-cln.swf.gz",
+    "workload/swf/KTH-SP2-1996-2.1-cln.swf.gz", "workload/swf/HPC2N-2002-2.2-cln.swf.gz","workload/swf/CEA-Curie-2011-2.1-cln.swf.gz",
+        "workload/swf/LANL-CM5-1994-4.1-cln.swf.gz", "workload/swf/LLNL-Atlas-2006-2.1-cln.swf.gz", "workload/swf/LLNL-Thunder-2007-1.1-cln.swf.gz",
+        "workload/swf/OSC-Clust-2000-3.1-cln.swf.gz", "workload/swf/Sandia-Ross-2001-1.1-cln.swf.gz", "workload/swf/SDSC-BLUE-2000-4.2-cln.swf.gz",
+        "workload/swf/SDSC-Par-1996-3.1-cln.swf.gz");
 
     private CloudSim simulation;
     private List<Vm> vmList;
@@ -135,8 +151,8 @@ public class optimizeServers {
         broker0 = new MyBroker(simulation);
         vmList = createSpaceSharedVmsAndSubmit();
 //        vmList = createTimeSharedVmsAndSubmit();
-        cloudletList = createWorkloadCloudletsAndSubmit();
-//        cloudletList = createSeveralWorkloadCloudletsAndSubmit();
+//        cloudletList = createWorkloadCloudletsAndSubmit();
+        cloudletList = createSeveralWorkloadCloudletsAndSubmit();
 
         cloudletList.forEach(c->c.setDeliveryTime(1*60*60, 2*60*60));
 
@@ -222,7 +238,7 @@ public class optimizeServers {
         SwfWorkloadFileReader reader = SwfWorkloadFileReader.getInstance(WORKLOAD_FILENAME, 1);
         reader.setMaxLinesToRead(maximumNumberOfCloudletsToCreateFromTheWorkloadFile);
         List<Cloudlet> list = reader.generateWorkload();
-        list.forEach(c->c.setLength(c.getLength()*10000));
+        list.forEach(c->c.setLength(c.getLength()));
         list.forEach(c->c.setNumberOfPes(HOST_PES));
 //        list.forEach(c->c.setSubmissionDelay(0));
         broker0.submitCloudletList(list);
@@ -241,7 +257,7 @@ public class optimizeServers {
             clist.addAll(list);
         }
         clist.sort(Comparator.comparingDouble(Cloudlet::getSubmissionDelay));
-        clist.forEach(c->c.setLength(c.getLength()*1000));
+        clist.forEach(c->c.setLength(c.getLength()));
         clist.forEach(c->c.setNumberOfPes(HOST_PES));
 //        clist.forEach(c->c.setSubmissionDelay(0));
         broker0.submitCloudletList(clist);
