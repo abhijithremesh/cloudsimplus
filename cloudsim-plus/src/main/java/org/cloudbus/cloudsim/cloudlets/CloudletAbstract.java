@@ -818,7 +818,8 @@ public abstract class CloudletAbstract extends CustomerEntityAbstract implements
     @Override
     public Cloudlet setDeliveryTime(int lowLim, int uppLim) {
         this.deliveryTime =  (long) this.submissionDelay +   this.getLength() + new Random().nextInt(uppLim-lowLim)+ lowLim ;
-        //this.deliveryTime = (int) this.getLength()  + new Random().nextInt(uppLim-lowLim)+ lowLim;
+//        this.deliveryTime = new Random().nextInt(uppLim-lowLim)+ lowLim;
+//        this.deliveryTime = (int) this.getLength()  + new Random().nextInt(uppLim-lowLim)+ lowLim;
         return this;
     }
 

@@ -64,16 +64,16 @@ import java.util.stream.Collectors;
 public class optimizeServers {
 
     /*************************************************/
-    private static final int  HOSTS = 5;
+    private static final int  HOSTS = 15;
     private static final int  HOST_PES = 128;
-    private static final int  HOST_RAM = 3_000_000; //in Megabytes
+    private static final int  HOST_RAM = 4_000_000; //in Megabytes
     private static final long HOST_BW = 1000000; //in Megabits/s
     private static final long HOST_STORAGE = 16_000_000; //in Megabytes
     private static final int  HOST_MIPS = 4000;
 
-    private static final int VMS = 5;
+    private static final int VMS = 15;
     private static final int VM_PES = 128;
-    private static final int VM_RAM = 3_000_000; //in Megabytes
+    private static final int VM_RAM = 4_000_000; //in Megabytes
     private static final long VM_BW = 1000; //in Megabits/s
     private static final long VM_STORAGE = 16_000_000; //in Megabytes
     /**************************************************************/
@@ -94,13 +94,12 @@ public class optimizeServers {
 //    /**************************************************************/
 
 
-
     private static int VM_MIPS;
     List<Integer> VM_MIPSList = new ArrayList<Integer>() {{
         add(1000);
-        add(2000);
-        add(3000);
-        add(4000);
+        add(1000);
+        add(1000);
+        add(1000);
     } };
 
 
@@ -108,11 +107,11 @@ public class optimizeServers {
 //    private static final int CLOUDLET_PES = 10;
 //    private static final int CLOUDLET_LENGTH = 1000;
 
-    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile = Integer.MAX_VALUE ; // Integer.MAX_VALUE
-    private static final String WORKLOAD_FILENAME = "workload/swf/NASA-iPSC-1993-3.1-cln.swf.gz";  // 18239
+    private int maximumNumberOfCloudletsToCreateFromTheWorkloadFile = Integer.MAX_VALUE; // Integer.MAX_VALUE
+    private static final String WORKLOAD_FILENAME = "workload/swf/NASA-iPSC-1993-3.1-cln.swf.gz";  // 18239 128
 //    private static final String WORKLOAD_FILENAME = "workload/swf/CTC-SP2-1996-3.1-cln.swf.gz";  // 77222
-//    private static final String WORKLOAD_FILENAME = "workload/swf/SDSC-SP2-1998-4.2-cln.swf.gz"; // 59715
-//    private static final String WORKLOAD_FILENAME = "workload/swf/KTH-SP2-1996-2.1-cln.swf.gz"; // 28476
+//    private static final String WORKLOAD_FILENAME = "workload/swf/SDSC-SP2-1998-4.2-cln.swf.gz"; // 59715 128
+//    private static final String WORKLOAD_FILENAME = "workload/swf/KTH-SP2-1996-2.1-cln.swf.gz"; // 28476 100
 //    private static final String WORKLOAD_FILENAME = "workload/swf/HPC2N-2002-2.2-cln.swf.gz";     // 202871
 //    private static final String WORKLOAD_FILENAME = "workload/swf/CEA-Curie-2011-2.1-cln.swf.gz";     //
 //    private static final String WORKLOAD_FILENAME = "workload/swf/LANL-CM5-1994-4.1-cln.swf.gz";     //
@@ -123,14 +122,8 @@ public class optimizeServers {
 //    private static final String WORKLOAD_FILENAME = "workload/swf/SDSC-BLUE-2000-4.2-cln.swf.gz";     //
 //    private static final String WORKLOAD_FILENAME = "workload/swf/SDSC-Par-1996-3.1-cln.swf.gz";     //
 
-
-
-
-    private List<String> WORKLOAD_FILENAME_LIST = Arrays.asList("workload/swf/NASA-iPSC-1993-3.1-cln.swf.gz", "workload/swf/CTC-SP2-1996-3.1-cln.swf.gz", "workload/swf/SDSC-SP2-1998-4.2-cln.swf.gz",
-    "workload/swf/KTH-SP2-1996-2.1-cln.swf.gz", "workload/swf/HPC2N-2002-2.2-cln.swf.gz","workload/swf/CEA-Curie-2011-2.1-cln.swf.gz",
-        "workload/swf/LANL-CM5-1994-4.1-cln.swf.gz", "workload/swf/LLNL-Atlas-2006-2.1-cln.swf.gz", "workload/swf/LLNL-Thunder-2007-1.1-cln.swf.gz",
-        "workload/swf/OSC-Clust-2000-3.1-cln.swf.gz", "workload/swf/Sandia-Ross-2001-1.1-cln.swf.gz", "workload/swf/SDSC-BLUE-2000-4.2-cln.swf.gz",
-        "workload/swf/SDSC-Par-1996-3.1-cln.swf.gz");
+    private List<String> WORKLOAD_FILENAME_LIST = Arrays.asList("workload/swf/NASA-iPSC-1993-3.1-cln.swf.gz",  "workload/swf/KTH-SP2-1996-2.1-cln.swf.gz", "workload/swf/SDSC-SP2-1998-4.2-cln.swf.gz");
+    private List<Integer> COMPUTING_UNIT_LIST = Arrays.asList(5,10,15);
 
     private CloudSim simulation;
     private List<Vm> vmList;
@@ -138,68 +131,83 @@ public class optimizeServers {
     private Datacenter datacenter0;
     MyBroker broker0;
 
+    private List<Double> avgTardinessList = new ArrayList<>();
+
     public static void main(String[] args) {
         new optimizeServers();
     }
 
     private optimizeServers() {
 
-        Log.setLevel(Level.INFO);
+        for (int w = 0; w < 1; w++){
 
-        simulation = new CloudSim();
-        datacenter0 = createDatacenter();
-        broker0 = new MyBroker(simulation);
-        vmList = createSpaceSharedVmsAndSubmit();
-//        vmList = createTimeSharedVmsAndSubmit();
-//        cloudletList = createWorkloadCloudletsAndSubmit();
-        cloudletList = createSeveralWorkloadCloudletsAndSubmit();
+            System.out.println("****************** workload: "+WORKLOAD_FILENAME_LIST.get(w)+" **************************");
 
-        cloudletList.forEach(c->c.setDeliveryTime(1*60*60, 2*60*60));
+            for (int u = 0; u < COMPUTING_UNIT_LIST.size(); u++) {
 
-        broker0.FirstComeFirstServe(vmList,cloudletList);
-        //broker0.Random(vmList, cloudletList);
-        //broker0.ShortestJobFirst(vmList, cloudletList);
-        //broker0.LongestJobFirst(vmList,cloudletList);
-        //broker0.ShortestCloudletFastestPE(vmList, cloudletList);
-        //broker0.LongestCloudletFastestPE(vmList, cloudletList);
-        //broker0.MinMin(vmList, cloudletList);
-        //broker0.MaxMin(vmList, cloudletList);
+                System.out.println("****************** computing units: "+COMPUTING_UNIT_LIST.get(u)+" **************************");
 
-        simulation.start();
+                for (int i = 0; i < 10; i++) {
 
-        new CloudletsTableBuilder(broker0.getCloudletFinishedList()).build();
+                    System.out.println("****************** simulation: " + i + " **************************");
 
-//        for (Cloudlet c: cloudletList
-//             ) {
-//            System.out.println("******************************************");
-//            System.out.println("submission delay: "+c.getSubmissionDelay());
-//            System.out.println("length: "+c.getLength());
-//            System.out.println("req_cores: "+c.getNumberOfPes());
-//            System.out.println("exe: "+c.getActualCpuTime());
-//            System.out.println("wait: "+c.getWaitingTime());
-//            System.out.println("delivery date: "+c.getDeliveryTime());
-//        }
+                    Log.setLevel(Level.OFF);
 
+                    simulation = new CloudSim();
+                    datacenter0 = createDatacenter(COMPUTING_UNIT_LIST.get(u));
+                    broker0 = new MyBroker(simulation);
+                    vmList = createSpaceSharedVmsAndSubmit(COMPUTING_UNIT_LIST.get(u));
+//                  vmList = createTimeSharedVmsAndSubmit();
+                    cloudletList = createWorkloadCloudletsAndSubmit(WORKLOAD_FILENAME_LIST.get(w));
+//                  cloudletList = createSeveralWorkloadCloudletsAndSubmit();
 
-        List<Cloudlet> tardyCloudlets = broker0.getCloudletFinishedList().stream().filter(c-> (c.getActualCpuTime() + c.getWaitingTime()) > c.getDeliveryTime()).collect(Collectors.toList());
+                    cloudletList.forEach(c -> c.setDeliveryTime(1 * 60 * 60, 2 * 60 * 60));
+//                  cloudletList.forEach(c->c.setDeliveryTime(10, 20));
 
-        System.out.println("tardy Cloudlets: "+tardyCloudlets.size());
+                    broker0.FirstComeFirstServe(vmList, cloudletList);
+                    //broker0.Random(vmList, cloudletList);
+                    //broker0.ShortestJobFirst(vmList, cloudletList);
+                    //broker0.LongestJobFirst(vmList,cloudletList);
+                    //broker0.ShortestCloudletFastestPE(vmList, cloudletList);
+                    //broker0.LongestCloudletFastestPE(vmList, cloudletList);
+                    //broker0.MinMin(vmList, cloudletList);
+                    //broker0.MaxMin(vmList, cloudletList);
 
-        printPerformanceMetrics(datacenter0, broker0);
+                    simulation.start();
 
-        new CloudletsTableBuilder(tardyCloudlets).build();
+                    //new CloudletsTableBuilder(broker0.getCloudletFinishedList()).build();
 
-        printTardiness(tardyCloudlets);
+                    List<Cloudlet> tardyCloudlets = broker0.getCloudletFinishedList().stream().filter(c -> (c.getSubmissionDelay() + c.getActualCpuTime() + c.getWaitingTime()) > c.getDeliveryTime()).collect(Collectors.toList());
+                    System.out.println("tardy Cloudlets: " + tardyCloudlets.size());
+
+                    printPerformanceMetrics(datacenter0, broker0);
+
+                    //new CloudletsTableBuilder(tardyCloudlets).build();
+
+                    avgTardinessList.add(printTardiness(tardyCloudlets));
+
+                }
+
+                System.out.println("avgTardinessList: "+avgTardinessList);
+                double standardDeviation = calculateSD(avgTardinessList);
+                System.out.println("standardDeviation: "+standardDeviation);
+                double marginError = (1.96)*(standardDeviation * Math.sqrt(avgTardinessList.size()));  // z score for 95 percent confidence: 1.96
+                System.out.println("marginError: "+marginError);
+                avgTardinessList.clear();
+
+            }
+
+        }
 
     }
 
-    private Datacenter createDatacenter() {
-        return new DatacenterSimple(simulation, createHosts());
+    private Datacenter createDatacenter(int hosts) {
+        return new DatacenterSimple(simulation, createHosts(hosts));
     }
 
-    private List<Host> createHosts() {
-        final List<Host> hostList = new ArrayList<>(HOSTS);
-        for(int h = 0; h < HOSTS; h++) {
+    private List<Host> createHosts(int hosts) {
+        final List<Host> hostList = new ArrayList<>(hosts);
+        for(int h = 0; h < hosts; h++) {
             final List<Pe> peList = new ArrayList<>(HOST_PES);
             for (int p = 0; p < HOST_PES; p++) {
                 peList.add(new PeSimple(HOST_MIPS));
@@ -222,9 +230,9 @@ public class optimizeServers {
         return list;
     }
 
-    private List<Vm> createSpaceSharedVmsAndSubmit() {
-        final List<Vm> list = new ArrayList<>(VMS);
-        for (int i = 0; i < VMS; i++) {
+    private List<Vm> createSpaceSharedVmsAndSubmit(int vms) {
+        final List<Vm> list = new ArrayList<>(vms);
+        for (int i = 0; i < vms; i++) {
             list.add(new VmSimple(VM_MIPSList.get(i % 4), VM_PES));
         }
         list.forEach(vm -> vm.setRam(VM_RAM).setBw(VM_BW).setSize(VM_STORAGE));
@@ -233,14 +241,17 @@ public class optimizeServers {
         return list;
     }
 
-    private List<Cloudlet> createWorkloadCloudletsAndSubmit() {
+    private List<Cloudlet> createWorkloadCloudletsAndSubmit(String WORKLOAD_FILENAME) {
 
         SwfWorkloadFileReader reader = SwfWorkloadFileReader.getInstance(WORKLOAD_FILENAME, 1);
         reader.setMaxLinesToRead(maximumNumberOfCloudletsToCreateFromTheWorkloadFile);
         List<Cloudlet> list = reader.generateWorkload();
-        list.forEach(c->c.setLength(c.getLength()));
-        list.forEach(c->c.setNumberOfPes(HOST_PES));
+        list.forEach(c->c.setLength(c.getLength() * 10000));
+//        list.forEach(c->c.setNumberOfPes(HOST_PES));
 //        list.forEach(c->c.setSubmissionDelay(0));
+        list.stream()
+            .filter(cloudlet -> cloudlet.getNumberOfPes() > HOST_PES)
+            .collect(Collectors.toList()).forEach(cloudlet -> cloudlet.setNumberOfPes(HOST_PES));
         broker0.submitCloudletList(list);
         System.out.println("Created "+ list.size()+" Cloudlets and submitted to broker");
         return list;
@@ -250,7 +261,7 @@ public class optimizeServers {
 
         List<Cloudlet> clist = new ArrayList<>();
         for (String s: WORKLOAD_FILENAME_LIST
-             ) {
+        ) {
             SwfWorkloadFileReader reader = SwfWorkloadFileReader.getInstance(s, 1);
             reader.setMaxLinesToRead(maximumNumberOfCloudletsToCreateFromTheWorkloadFile);
             List<Cloudlet> list = reader.generateWorkload();
@@ -258,7 +269,10 @@ public class optimizeServers {
         }
         clist.sort(Comparator.comparingDouble(Cloudlet::getSubmissionDelay));
         clist.forEach(c->c.setLength(c.getLength()));
-        clist.forEach(c->c.setNumberOfPes(HOST_PES));
+        clist.stream()
+            .filter(cloudlet -> cloudlet.getNumberOfPes() > HOST_PES)
+            .collect(Collectors.toList()).forEach(cloudlet -> cloudlet.setNumberOfPes(HOST_PES));
+//        clist.forEach(c->c.setNumberOfPes(HOST_PES));
 //        clist.forEach(c->c.setSubmissionDelay(0));
         broker0.submitCloudletList(clist);
         System.out.println("Created "+ clist.size()+" Cloudlets and submitted to broker");
@@ -271,43 +285,17 @@ public class optimizeServers {
         double makespan = roundDecimals(broker.getCloudletFinishedList().get(broker.getCloudletFinishedList().size()-1).getFinishTime());
         double throughput = broker.getCloudletFinishedList().size()/makespan;
 
-        System.out.println("finishedCloudlets: "+broker.getCloudletFinishedList().size());
-        System.out.println("makespan: "+makespan);
-        System.out.println("throughput: "+throughput);
-
-        /*
-        List<Double> totalHostCpuUtilizationList = new ArrayList<>();
-        double totalHostCpuUtilization = 0;
-        double totalHostPowerConsumption = 0;
-        for (Host h: datacenter.getHostList()
-        ) {
-            double utilizationPercentMean = h.getCpuUtilizationStats().getMean();
-            double utilizationPercentCount = h.getCpuUtilizationStats().count();
-            double watts = h.getPowerModel().getPower(utilizationPercentMean);
-            totalHostCpuUtilizationList.add(roundDecimals(utilizationPercentMean));
-            totalHostCpuUtilization += utilizationPercentMean;
-            totalHostPowerConsumption += watts;
-        }
-        //System.out.println("totalHostCpuUtilization: "+roundDecimals(totalHostCpuUtilization*100));
-        //System.out.println("totalHostCpuUtilizationList: "+totalHostCpuUtilizationList);
-        System.out.println("totalHostPowerConsumption: "+roundDecimals(totalHostPowerConsumption));
-         */
-
-        double degreeOfImbalance = 0.0;
-        List <Double> vmExecTimeList = new ArrayList<Double>();
-        for (Vm v: broker0.getVmCreatedList()
-        ) {
-            vmExecTimeList.add(v.getTotalExecutionTime());
-        }
-        degreeOfImbalance = (Collections.max(vmExecTimeList) - Collections.min(vmExecTimeList))/vmExecTimeList.stream().mapToDouble(d -> d).average().orElse(0.0);
+//        System.out.println("finishedCloudlets: "+broker.getCloudletFinishedList().size());
+        System.out.println("makespan: "+makespan/(3600));
+//        System.out.println("throughput: "+throughput);
 
         double totalWaitingTime = 0.0;
         for (Cloudlet c: broker.getCloudletFinishedList()
         ) {
             totalWaitingTime += c.getWaitingTime();
         }
-        System.out.println("totalWaitingTime: "+roundDecimals(totalWaitingTime));
-
+//        System.out.println("totalWaitingTime: "+roundDecimals(totalWaitingTime/3600));
+        System.out.println("avgWaitingTime: "+roundDecimals((totalWaitingTime/3600)/cloudletList.size()));
 
 
         double flowTime = 0.0;
@@ -315,32 +303,59 @@ public class optimizeServers {
         ) {
             flowTime += c.getWaitingTime() + c.getActualCpuTime() + c.getSubmissionDelay();
         }
-        System.out.println("flowTime: "+roundDecimals(flowTime));
+//        System.out.println("totalflowTime: "+roundDecimals(flowTime/3600));
+//        System.out.println("avgflowTime: "+roundDecimals((flowTime/3600)/cloudletList.size()));
 
 
-        /*
-        double totalCpuUtilization = 0;
-        for (Vm v : broker.getVmCreatedList()
-             ) {
-            totalCpuUtilization += v.getCpuUtilizationStats().getMean();
+        double execTime = 0.0;
+        for (Cloudlet c : broker.getCloudletFinishedList()
+        ) {
+            execTime +=  c.getActualCpuTime();
         }
-        System.out.println("MeanCpuUtilization: "+roundDecimals((totalCpuUtilization/20)*100));
+//        System.out.println("totalexecTime: "+roundDecimals(execTime/3600));
+//        System.out.println("avgexecTime: "+roundDecimals((execTime/3600)/cloudletList.size()));
 
 
-         */
     }
 
     private double roundDecimals(double value){
         return  Math.round(value * 100.0) / 100.0;
     }
 
-    public void printTardiness(List<Cloudlet> cloudlets){
+    public double printTardiness(List<Cloudlet> cloudlets){
+
         double totalTardiness = 0;
         for (Cloudlet c : cloudlets
-             ) {
-            totalTardiness+=((c.getActualCpuTime()+c.getWaitingTime())-(c.getDeliveryTime()));
+        ) {
+//            totalTardiness+=((c.getFinishTime())-(c.getDeliveryTime()));
+//            totalTardiness+=((c.getActualCpuTime() + c.getWaitingTime())-(c.getDeliveryTime()));
+            totalTardiness+=(( c.getSubmissionDelay() + c.getActualCpuTime() + c.getWaitingTime() )-(c.getDeliveryTime()));
         }
-        System.out.println("totalTardiness: "+totalTardiness);
+//        System.out.println("totalTardiness: "+totalTardiness/3600);
+//        System.out.println("avgtardytardiness: "+(totalTardiness/3600)/cloudlets.size());
+        double avgtardiness = (totalTardiness/3600)/cloudletList.size();
+        System.out.println("avgtardiness: "+avgtardiness);
+
+        return avgtardiness;
     }
+
+    public double calculateSD(List<Double> list){
+
+        double sum = 0.0, standardDeviation = 0.0;
+
+        for(double num : list) {
+            sum += num;
+        }
+
+        double mean = sum/list.size();
+
+        for(double num: list) {
+            standardDeviation += Math.pow(num - mean, 2);
+        }
+
+        return Math.sqrt(standardDeviation/list.size());
+    }
+
+
 
 }
